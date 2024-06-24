@@ -6,6 +6,7 @@
 	path = candle-vllm
 	url = git@github.com:guoqingbao/candle-vllm.git
 	ignore = dirty
+	branch = enflame
 [submodule "candle-paged-attention"]
 	path = candle-paged-attention
 	url = git@git.enflame.cn:guoqing.bao/candle-paged-attention.git
