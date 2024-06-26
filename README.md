@@ -5,11 +5,13 @@ OpenAI-API compatible chat service for `GCU` platform based on `candle-gcu` and 
 ## Getting started
 
 ### Install dependencies
-#### Step 1: Install Rust
+#### Step 1: Install Rust & download code
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 sudo apt install libssl-dev
 sudo apt install pkg-config
+git clone git@git.enflame.cn:era/candle-vllm-gcu.git
+git submodule update --init --recursive
 ```
 
 #### Step 2: Run candle-vllm service on GCU
@@ -20,23 +22,24 @@ cargo run --release --features gcu -- --port 2000 --weight-path /home/llama2_7b/
 
 #### Step 3: Chat with ChatUI (recommended)
 
+Install ChatUI and its dependencies:
+
 ```
-cd ChattierGPT-UI
-pip install -r requirements.txt
-python -m streamlit run src/main.py
+cd candle-vllm-demo
+apt install npm #install npm if needed
+npm install n -g #update node js if needed
+n stable #update node js if needed
+npm i -g pnpm #install pnpm manager
+pnpm install #install ChatUI dependencies
 ```
 
-You may fix bugs for streamlit if error prompt 
-`OSError: [Errno 28] inotify watch limit reached`
+Launching the ChatUI:
+```
+pnpm run dev # run the ChatUI
+```
 
-Uncommets for files dist-packages/streamlit/web/bootstrap.py:
-
-    #_install_config_watchers(flag_options)
-    
-    #_install_pages_watcher(main_script_path)
-
-## Demo chat video (on GCU, 2x video playback speed)
-<img src="resources/candle-vllm-gcu-demo.gif" width="95%" height="95%" >
+## Demo chat video (on GCU)
+<img src="resources/candle-vllm-gcu-demo.gif" width="85%" height="85%" >
 
 ## Usage
 TODO
