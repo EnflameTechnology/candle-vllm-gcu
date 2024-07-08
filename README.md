@@ -50,7 +50,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 | #1 | **LLAMA/LLAMA2/LLaMa3** |✅|20 tks/s (7B)|
 | #2 | Mistral |TBD|TBD|
 | #3 | Phi (v1, v1.5, v2) |TBD|TBD|
-| #4 | **Phi-3 （3.8B, 7B）** |✅|27 tks/s (3.8B)|
+| #4 | **Phi-3 （3.8B, 7B）** |✅|29 tks/s (3.8B)|
 | #5 | Yi |TBD|TBD|
 | #6 | StableLM |TBD|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|
