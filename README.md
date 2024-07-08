@@ -56,12 +56,12 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 | #7 | BigCode/StarCode |TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|
 | #9 | **QWen2 (1.8B, 7B)** |✅|43 tks/s (1.8B)|
-| #10 | Google Gemma |TBD|TBD|
+| #10 | **Google Gemma** |✅|43 tks/s (2B)|
 | #11 | Blip-large (Multimodal) |TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|
 
 ## Usage
-`MODEL_TYPE` = ["llama", "phi3", "qwen2"]
+`MODEL_TYPE` = ["llama", "phi3", "qwen2", "gemma"]
 
 `WEIGHT_FILE_PATH` = Corresponding weight path for the given model type
 
