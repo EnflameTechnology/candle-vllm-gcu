@@ -49,10 +49,10 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 |--|--|--|--|
 | #1 | **LLAMA/LLAMA2/LLaMa3** |✅|20 tks/s (7B)|
 | #2 | Mistral |TBD|TBD|
-| #3 | Phi (v1, v1.5, v2) |TBD|TBD|
+| #3 | **Phi (v1, v1.5, v2)** |✅|TBD|
 | #4 | **Phi-3 （3.8B, 7B）** |✅|29 tks/s (3.8B)|
-| #5 | Yi |TBD|TBD|
-| #6 | StableLM |TBD|TBD|
+| #5 | **Yi** |✅|22 tks/s (6B)|
+| #6 | **StableLM** |✅|35 tks/s (3B)|
 | #7 | BigCode/StarCode |TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|
 | #9 | **QWen2 (1.8B, 7B)** |✅|43 tks/s (1.8B)|
@@ -61,7 +61,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|
 
 ## Usage
-`MODEL_TYPE` = ["llama", "phi3", "qwen2", "gemma"]
+`MODEL_TYPE` = ["llama", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm"]
 
 `WEIGHT_FILE_PATH` = Corresponding weight path for the given model type
 
@@ -75,6 +75,12 @@ or
 
 ```
 cargo run --release --features gcu -- --port 2000 --model-id <MODEL_ID> <MODEL_TYPE> --repeat-last-n 64
+```
+
+You may supply penalty and temperature to the model to prevent potential repetitions, for example:
+
+```
+cargo run --release -- --port 2000 --weight-path /home/mistral_7b/ mistral --repeat-last-n 32 --penalty 1.1 --temperature 0.8
 ```
 
 ## Support
