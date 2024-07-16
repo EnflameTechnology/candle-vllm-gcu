@@ -48,7 +48,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 | Model ID | Model Type | Supported | Speed (S60, BF16)
 |--|--|--|--|
 | #1 | **LLAMA/LLAMA2/LLaMa3** |✅|20 tks/s (7B)|
-| #2 | Mistral |TBD|TBD|
+| #2 | **Mistral** |✅|19 tks/s (7B)|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|
 | #4 | **Phi-3 （3.8B, 7B）** |✅|29 tks/s (3.8B)|
 | #5 | **Yi** |✅|22 tks/s (6B)|
@@ -83,11 +83,8 @@ You may supply penalty and temperature to the model to prevent potential repetit
 cargo run --release -- --port 2000 --weight-path /home/mistral_7b/ mistral --repeat-last-n 32 --penalty 1.1 --temperature 0.8
 ```
 
-## Support
-TODO
-
-## Roadmap
-TODO
-
-## Contributing
-TODO
+## TODO
+1. Optimization of generation speed.
+2. Add quantization support.
+3. Simultaneous chat serving for multiple users.
+4. Support multimodal models.
