@@ -45,7 +45,7 @@ pnpm run dev # run the ChatUI
 
 Currently, candle-vllm-gcu supports chat serving for the following models.
 
-| Model ID | Model Type | Supported | Speed (S60, BF16)
+| Model ID | Model Type | Supported | Speed (S60, BF16, `batch size=1`)
 |--|--|--|--|
 | #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|20 tks/s (7B), 18 tks/s (LLaMa3.1 8B)|
 | #2 | **Mistral** |✅|19 tks/s (7B)|
