@@ -47,7 +47,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 
 | Model ID | Model Type | Supported | Speed (S60, BF16)
 |--|--|--|--|
-| #1 | **LLAMA/LLAMA2/LLaMa3** |✅|20 tks/s (7B)|
+| #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|20 tks/s (7B), 18 tks/s (LLaMa3.1 8B)|
 | #2 | **Mistral** |✅|19 tks/s (7B)|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|
 | #4 | **Phi-3 （3.8B, 7B）** |✅|29 tks/s (3.8B)|
@@ -61,7 +61,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|
 
 ## Usage
-`MODEL_TYPE` = ["llama", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm"]
+`MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm"]
 
 `WEIGHT_FILE_PATH` = Corresponding weight path for the given model type
 
@@ -69,13 +69,20 @@ Currently, candle-vllm-gcu supports chat serving for the following models.
 cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE> --repeat-last-n 64
 ```
 
-or
+Example: 
+```
+cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --repeat-last-n 64
+```
+
+**or**
 
 `MODEL_ID` = Huggingface model id
 
 ```
 cargo run --release --features gcu -- --port 2000 --model-id <MODEL_ID> <MODEL_TYPE> --repeat-last-n 64
 ```
+
+Example: 
 
 You may supply penalty and temperature to the model to prevent potential repetitions, for example:
 
