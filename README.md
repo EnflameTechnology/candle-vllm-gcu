@@ -48,7 +48,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 | Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`)
 |--|--|--|--|--|
 | #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|20 tks/s (7B), 18 tks/s (LLaMa3.1 8B)| 175 tks/s (LLaMa3.1 8B) |
-| #2 | **Mistral** |✅|19 tks/s (7B)| 220 tks/s (7B) |
+| #2 | **Mistral** |✅|19 tks/s (7B)| 230 tks/s (7B) |
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|
 | #4 | **Phi-3 （3.8B, 7B）** |✅|29 tks/s (3.8B)|
 | #5 | **Yi** |✅|22 tks/s (6B)|
@@ -71,7 +71,7 @@ cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PAT
 
 Example: 
 ```
-cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3
+cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --penalty 1.1 --temperature 0.7
 ```
 
 **or**
@@ -87,7 +87,7 @@ Example:
 You may supply penalty and temperature to the model to prevent potential repetitions, for example:
 
 ```
-cargo run --release -- --port 2000 --weight-path /home/mistral_7b/ mistral --repeat-last-n 64 --penalty 1.1 --temperature 0.8
+cargo run --release -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
 ```
 
 ## Batched requests
