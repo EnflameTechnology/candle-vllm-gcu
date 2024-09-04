@@ -87,7 +87,7 @@ Example:
 You may supply penalty and temperature to the model to prevent potential repetitions, for example:
 
 ```
-cargo run --release -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
+cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
 ```
 
 ## Batched requests
@@ -145,8 +145,25 @@ async def benchmark():
 
 asyncio.run(benchmark())
 ```
+
+## In-situ quantization for GCU
+
+Candle-vllm-gcu now supports in-situ quantization, allowing the transformation of default weights (F32/F16/BF16) into GGML format during model loading.
+
+```
+cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --quant q8_0
+```
+
+Options for `quant` parameters on GCU: ["q8_0"]
+
+**Please note**:
+
+1) In-situ quantization is a new feature under experimental development, and `q8_0` is not an ideal solution for quantization. `q4_k` format is prefered.
+
+2) Batched processing still requires further optimizations when operating in quantization mode.
+
 ## TODO
 1. Optimization of generation speed.
-2. Add quantization support.
+2. Add quantization support (`q8_0` supported).
 3. Simultaneous chat serving for multiple users.
 4. Support multimodal models.
