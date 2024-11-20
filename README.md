@@ -90,9 +90,24 @@ You may supply penalty and temperature to the model to prevent potential repetit
 cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
 ```
 
+## Quantized (GPTQ)
+1) Transform GPTQ model (8bit) to Enflame format using `transform_safetensors.py`
+
+2) Run the transformed quantized model
+
+```
+cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct-GPTQ-Enflame/ llama3 --temperature 0.7 --quant gptq
+```
+
 ## Batched requests
 
 Refer to `examples/benchmark.py`
+
+Install openai API package (python3 -m pip install openai) and run
+
+```
+python3 examples/benchmark.py --batch 16 --max_tokens 1024
+```
 
 ``` python
 async def benchmark():
