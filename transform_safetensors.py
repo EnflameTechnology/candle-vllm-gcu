@@ -28,6 +28,7 @@ def transform_weight(src_tensor, bits=8):
             unpacked_weight = torch.bitwise_right_shift(cur_weight, shift)
             uint8_tensor[i * pack_num + j, :] = torch.bitwise_and(unpacked_weight, 2**bits - 1)
     int8_tensor = uint8_tensor.to(torch.int32).sub(128).to(torch.int8)
+    int8_tensor = int8_tensor.t().contiguous()
     return int8_tensor
 
 def transform_file(src_file, dst_file):
