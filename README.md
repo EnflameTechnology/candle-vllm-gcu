@@ -38,7 +38,7 @@ Launching the ChatUI:
 pnpm run dev # run the ChatUI
 ```
 
-## Demo chat video (on GCU, LLaMa2 7B, BF16)
+## Demo chat video (on Scorpio S60, LLaMa3.1 8B, BF16, 22 tokens/s)
 <img src="resources/candle-vllm-gcu-demo.gif" width="85%" height="85%" >
 
 ## Status
