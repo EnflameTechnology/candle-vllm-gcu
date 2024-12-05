@@ -47,7 +47,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 
 | Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`)
 |--|--|--|--|--|--|
-| #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|25 tks/s (7B), 22 tks/s (LLaMa3.1 8B)| 260 tks/s (LLaMa3.1 8B) | 306 tks/s (LLaMa3.1 8B) |
+| #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|25 tks/s (7B), 23 tks/s (LLaMa3.1 8B)| 260 tks/s (LLaMa3.1 8B) | 306 tks/s (LLaMa3.1 8B) |
 | #2 | **Mistral** |✅|24 tks/s (7B)|265 tks/s (7B)|TBD|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|
 | #4 | **Phi-3 （3.8B, 7B）** |✅|36 tks/s (3.8B)|284 tks/s (BF16+F32, 7B)|TBD|
