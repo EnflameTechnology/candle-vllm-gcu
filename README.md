@@ -50,12 +50,12 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 | #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|25 tks/s (7B), 23 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) |
 | #2 | **Mistral** |✅|24 tks/s (7B)|312 tks/s (7B)|TBD|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|
-| #4 | **Phi-3 （3.8B, 7B）** |✅|36 tks/s (3.8B)|307 tks/s (BF16+F32, 7B)|TBD|
-| #5 | **Yi** |✅|27 tks/s (6B)|247 tks/s (BF16+F32, 6B)|TBD|
-| #6 | **StableLM** |✅|46 tks/s (3B)|403 tks/s (BF16+F32, 3B)|TBD|
+| #4 | **Phi-3 （3.8B, 7B）** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
+| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|
+| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2 (1.8B, 7B)** |✅|55 tks/s (1.8B)|688 tks/s (1.8B*)|
+| #9 | **QWen2 (1.8B, 7B)** |✅|57 tks/s (1.8B)|725 tks/s (1.8B*)|
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
