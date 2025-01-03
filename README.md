@@ -15,12 +15,36 @@ git submodule update --init --recursive
 ```
 
 #### Step 2: Run candle-vllm service on GCU
+
+Unquantized
 ```
 cd candle-vllm
-cargo run --release --features gcu -- --port 2000 --weight-path /home/llama2_7b/ llama --repeat-last-n 64
+cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.
 ```
 
-#### Step 3: Chat with ChatUI (recommended)
+Quantized (transform weight to Enflame format using the given script, `dtype` is used for kv cache and attention)
+```
+cd candle-vllm
+cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT/ llama3 --quant gptq --temperature 0. --penalty 1.
+```
+
+#### Step 3: 
+
+__Option 1:__ Chat with Chat.py (recommended)
+
+Install API and chatbot dependencies (openai package is only used for local chat with candle-vllm)
+```shell
+python3 -m pip install openai
+python3 -m pip install rich
+python3 -m pip install click
+```
+
+Chat with the mini chatbot
+```shell
+python3 examples/chat.py
+```
+
+__Option 2:__ Chat with ChatUI
 
 Install ChatUI and its dependencies:
 
@@ -33,7 +57,7 @@ npm i -g pnpm #install pnpm manager
 pnpm install #install ChatUI dependencies
 ```
 
-Launching the ChatUI:
+Launch the Chat UI:
 ```
 pnpm run dev # run the ChatUI
 ```
