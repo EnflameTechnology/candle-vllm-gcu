@@ -28,6 +28,25 @@ cd candle-vllm
 cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT/ llama3 --quant gptq --temperature 0. --penalty 1.
 ```
 
+Run `Multi-threaded` `Multi-GCU` inference (not stable):
+
+```shell
+dpkg -i eccl_3.1xxx_amd64.deb  # Install ECCL in the environment where candle-vllm-gcu resides.
+```
+
+```shell
+cargo run --release --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
+```
+
+**Note:** 
+1) This feature (`Multi-threaded` `Multi-GCU`) is not stable at the moment (waiting for GCU `topsCtxSetCurrent`)
+2) Quantized models are not supported yet under multi-gcu setting.
+
+Run `Multi-process` `Multi-GCU` inference (stable):
+```shell
+cargo run --release --example llama_multiprocess --features gcu,scorpio,eccl,async -- --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ --num-shards 2 --dtype bf16 --prompt "Please talk about deep learning in 100 words."
+```
+
 #### Step 3: 
 
 __Option 1:__ Chat with Chat.py (recommended)
