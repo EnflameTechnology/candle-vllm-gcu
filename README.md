@@ -28,6 +28,11 @@ cd candle-vllm
 cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT/ llama3 --quant gptq --temperature 0. --penalty 1.
 ```
 
+Run **DeepSeek** MoE models
+```
+cargo run --release --features gcu -- --port 2000 --weight-path /home/DeepSeek-V2-Lite-Chat deep-seek --penalty 1.0 --temperature 0.
+```
+
 Run `Multi-threaded` `Multi-GCU` inference (not stable):
 
 ```shell
@@ -102,6 +107,7 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
+| #13 | **DeepSeek-V2** |✅|TBD|TBD|
 
 ## General Usage
 `MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm"]
