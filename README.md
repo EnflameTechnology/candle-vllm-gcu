@@ -16,13 +16,13 @@ git submodule update --init --recursive
 
 #### Step 2: Run candle-vllm service on GCU
 
-Unquantized
+Run `Unquantized` models
 ```shell
 cd candle-vllm
 cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.
 ```
 
-Quantized (transform weight to Enflame format using the given script, `dtype` is used for kv cache and attention)
+Run `Quantized` models (transform weight to Enflame format using the given script, `dtype` is used for kv cache and attention)
 ```shell
 cd candle-vllm
 cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-Enflame/ llama3 --quant gptq --temperature 0. --penalty 1.
@@ -33,26 +33,31 @@ Run **DeepSeek** MoE models
 cargo run --release --features gcu -- --port 2000 --weight-path /home/DeepSeek-V2-Lite-Chat deep-seek --penalty 1.0 --temperature 0.
 ```
 
-Run `Multi-threaded` `Multi-GCU` inference (not stable):
+Run `Multi-threaded` `Multi-GCU` inference (not stable, use `Debug` mode):
 
 ```shell
 dpkg -i eccl_3.1xxx_amd64.deb  # Install ECCL in the environment where candle-vllm-gcu resides.
 ```
 
 ```shell
-cargo run --release --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
+cargo run --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
 ```
 
-Run `Multi-threaded` `Multi-GCU` inference for quantized models
+For large batch processing, increase the `holding time` (e.g., 1000 ms, holding more requests as a batch) (you may also increase kv cache by setting `kvcache-mem-gpu`)
 ```shell
-cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
+cargo run --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --holding-time 1000 --weight-path /home/weights/QwQ-32B/ qwen2 --temperature 0.8 --penalty 1.0
+```
+
+Run `Multi-threaded` `Multi-GCU` inference for `quantized models`
+```shell
+cargo run --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
 ```
 
 **Note:** 
 1) This feature (`Multi-threaded` `Multi-GCU`) is not stable at the moment (waiting for GCU `topsCtxSetCurrent`)
-2) Quantized models are not supported yet under multi-gcu setting.
+2) On `GPTQ` quantized models are supported under multi-gcu setting.
 
-Run `Multi-process` `Multi-GCU` inference (stable):
+Run `Multi-process` `Multi-GCU` inference (stable, but not for candle-gcu):
 ```shell
 cd candle-gcu/candle-gcu
 cargo run --release --example llama_multiprocess --features gcu,scorpio,eccl,async -- --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ --num-shards 2 --dtype bf16 --prompt "Please talk about deep learning in 100 words."
@@ -99,6 +104,7 @@ pnpm run dev # run the ChatUI
 
 Currently, candle-vllm-gcu supports chat serving for the following models on `S60`.
 
+__`List of 1k decoding results:`__
 | Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`)
 |--|--|--|--|--|--|
 | #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|25 tks/s (7B), 23 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) |
@@ -113,19 +119,24 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #13 | **DeepSeek-V2** |✅|TBD|TBD|
+| #13 | **DeepSeek-V2** |✅|TBD|TBD|TBD|
+| #13 | **QwQ-32B** |✅|11 tokens (**tp=2**)|197 tokens (**tp=2, bs=32**)|TBD|
 
 ## General Usage
-`MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm"]
+`MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
 
 `WEIGHT_FILE_PATH` = Corresponding weight path for the given model type
 
-```
+Parameters **before** `MODEL_TYPE`: used for candle-vllm general config (e.g, port, dtype, kvcache size)
+
+Parameters **after** `MODEL_TYPE`: used for model config (e.g., sampling parameters, quant)  
+
+```shell
 cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE>
 ```
 
 Example: 
-```
+```shell
 cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0.7
 ```
 
@@ -156,7 +167,7 @@ cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b
 cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct-GPTQ-Enflame/ llama3 --temperature 0. --penalty 1. --quant gptq
 ```
 
-## Batched requests
+## Batched requests (Benchmark)
 
 Refer to `examples/benchmark.py`
 
@@ -236,6 +247,6 @@ Options for `quant` parameters on GCU: ["q8_0"]
 
 ## TODO
 1. Optimization of generation speed.
-2. Add quantization support (`q8_0` supported).
+2. Add supports for more quantization formats (`q8_0` and `gptq` supported).
 3. Simultaneous chat serving for multiple users.
 4. Support multimodal models.
