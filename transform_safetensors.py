@@ -8,7 +8,7 @@ import argparse
 import os
 import shutil
 
-def transform_weight(src_tensor, bits=8, nk=False):
+def transform_weight(src_tensor, bits, nk):
     """
     Transform 8-bit GPTQ weights from int32 to int8 representation.
 
@@ -29,10 +29,10 @@ def transform_weight(src_tensor, bits=8, nk=False):
             uint8_tensor[i * pack_num + j, :] = torch.bitwise_and(unpacked_weight, 2**bits - 1)
     int8_tensor = uint8_tensor.to(torch.int32).sub(128).to(torch.int8)
     if nk:
-        int8_tensor = int8_tensor.t().contiguous()
+        int8_tensor = src_tensor.t().contiguous()
     return int8_tensor
 
-def transform_file(src_file, dst_file, nk):
+def transform_file(src_file, dst_file, bits, nk):
     """
     Transform and save safetensors file.
 
@@ -52,7 +52,7 @@ def transform_file(src_file, dst_file, nk):
             continue
         if key.endswith(".qweight"):
             print(f"Transforming tensor: {key}")
-            tgt_dict[key] = transform_weight(tensor, nk)
+            tgt_dict[key] = transform_weight(tensor, bits, nk)
         else:
             tgt_dict[key] = tensor
 
@@ -82,7 +82,7 @@ def main():
         "--nk", 
         type=bool, 
         required=False, 
-        default=False,
+        default=True,
         help="Output nk format (default GPTQ kn format)."
     )
 
@@ -92,7 +92,7 @@ def main():
         dst_directory = os.path.dirname(os.path.abspath(args.dst))
         if not os.path.exists(dst_directory):
             os.makedirs(dst_directory)
-        transform_file(args.src, args.dst, args.nk)
+        transform_file(args.src, args.dst, 8, args.nk)
         shutil.copy2(os.path.dirname(os.path.abspath(args.src)) + "/tokenizer.json", dst_directory)
         shutil.copy2(os.path.dirname(os.path.abspath(args.src)) + "/config.json", dst_directory)
     except Exception as e:

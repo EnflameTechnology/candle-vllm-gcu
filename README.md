@@ -33,24 +33,24 @@ Run **DeepSeek** MoE models
 cargo run --release --features gcu -- --port 2000 --weight-path /home/DeepSeek-V2-Lite-Chat deep-seek --penalty 1.0 --temperature 0.
 ```
 
-Run `Multi-threaded` `Multi-GCU` inference (not stable, use `Debug` mode):
+Run `Multi-threaded` `Multi-GCU` inference:
 
 ```shell
 dpkg -i eccl_3.1xxx_amd64.deb  # Install ECCL in the environment where candle-vllm-gcu resides.
 ```
 
 ```shell
-cargo run --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
+cargo run --release --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
 ```
 
 For large batch processing, increase the `holding time` (e.g., 1000 ms, holding more requests as a batch) (you may also increase kv cache by setting `kvcache-mem-gpu`)
 ```shell
-cargo run --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --holding-time 1000 --weight-path /home/weights/QwQ-32B/ qwen2 --temperature 0.8 --penalty 1.0
+cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --holding-time 1000 --weight-path /home/weights/QwQ-32B/ qwen2 --temperature 0.8 --penalty 1.0
 ```
 
 Run `Multi-threaded` `Multi-GCU` inference for `quantized models`
 ```shell
-cargo run --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
+cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
 ```
 
 **Note:** 
@@ -107,20 +107,20 @@ Currently, candle-vllm-gcu supports chat serving for the following models on `S6
 __`List of 1k decoding results:`__
 | Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`)
 |--|--|--|--|--|--|
-| #1 | **LLAMA/LLAMA2/LLaMa3/LLaMa3.1** |✅|25 tks/s (7B), 23 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) |
-| #2 | **Mistral** |✅|24 tks/s (7B)|312 tks/s (7B)|TBD|
+| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) |
+| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|
-| #4 | **Phi-3 （3.8B, 7B）** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
+| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
 | #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|
 | #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2 (1.8B, 7B)** |✅|57 tks/s (1.8B)|725 tks/s (1.8B*)|
+| #9 | **QWen2** |✅|21 tks/s (14B, **tp==2**)|310 tks/s (14B, **tp==2, bs==32**)|
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
 | #13 | **DeepSeek-V2** |✅|TBD|TBD|TBD|
-| #13 | **QwQ-32B** |✅|11 tokens (**tp=2**)|197 tokens (**tp=2, bs=32**)|TBD|
+| #13 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|
 
 ## General Usage
 `MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
