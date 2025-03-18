@@ -115,7 +115,7 @@ __`List of 1k decoding results:`__
 | #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2** |✅|21 tks/s (14B, **tp==2**)|310 tks/s (14B, **tp==2, bs==32**)|
+| #9 | **QWen2** |✅|22 tks/s (14B, **tp==2**)|322 tks/s (14B, **tp==2, bs==32**)|
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
