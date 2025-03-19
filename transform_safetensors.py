@@ -1,7 +1,5 @@
-# example (8-bit gptq to Enflame w8a16): 
-# python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit --dst /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame --bits 8 --method gptq --group 128 --nk true
-
-
+# example: python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit --dst /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame --bits 8 --method gptq --group 128 --nk true
+# example: python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk False
 import torch
 from safetensors.torch import load_file, save_file
 import argparse
@@ -187,12 +185,12 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
                     qzeros = src_dict[key_qzeros]
                     key_scales = key_prefix + ".scales"
                     scales = src_dict[key_scales]
-                    key_g_idx = key_prefix + ".g_idx"
-                    g_idx = src_dict[key_g_idx]
                     if method == "awq":
                         qweight, qzeros = awq_rearrange_uint4_int32_uint8(tensor, qzeros, scales)
                     else:
                         qweight, qzeros = gptq_rearrange_uint4_int32_uint8(tensor, qzeros, scales)
+                        key_g_idx = key_prefix + ".g_idx"
+                        g_idx = src_dict[key_g_idx]
                         assert torch.all(g_idx[1:] - g_idx[:-1] >= 0).item() and \
                             g_idx[-1] - g_idx[0] + 1 == g_idx.shape[0] / group_size, \
                             "gcu only support g_idx is continuous."
@@ -203,6 +201,8 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
                     tgt_dict[key] = qweight
                     tgt_dict[key_qzeros] = qzeros
                     tgt_dict[key_scales] = scales
+                else:
+                    tgt_dict[key] = tensor
 
         print(f"Saving transformed file: {dst_f}")
         save_file(tgt_dict, dst_f)
@@ -270,9 +270,9 @@ def main():
     assert args.dst != "" and not os.path.exists(args.dst), "Must provide dst folder (or dst folder must be empty)!"
 
     assert args.bits == 8 or args.bits == 4, "only 4-bit and 8-bit models are supported!"
-    assert args.group == 128, "only group size of 128 is supported!"
+    assert args.group == 128 or args.group == 64, "only group size of 128 is supported!"
     assert args.method == "awq" or args.method == "gptq", "only awq and gptq quantization methods are supported!"
-    assert args.bits == 8 and args.method == "gptq", "8-bit gptq only, awq-8bit not supported!"
+    assert ((args.bits == 8 or args.bits == 4) and args.method == "gptq") or (args.bits == 4 and args.method == "awq"), "8-bit gptq, 4-bit gptq and 4-bit awq only!"
 
     try:
         src_directory = args.src
