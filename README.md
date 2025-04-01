@@ -48,21 +48,21 @@ For large batch processing, increase the `holding time` (e.g., 1000 ms, holding 
 cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --holding-time 1000 --weight-path /home/weights/QwQ-32B/ qwen2 --temperature 0.8 --penalty 1.0
 ```
 
+Run `Multi-process` `Multi-GCU` inference:
+```shell
+cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT llama3 --quant gptq --temperature 0. --penalty 1.0
+
+cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct llama3 --temperature 0. --penalty 1.0
+```
+
 Run `Multi-threaded` `Multi-GCU` inference for `quantized models`
 ```shell
 cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
 ```
 
 **Note:** 
-1) This feature (`Multi-threaded` `Multi-GCU`) is not stable at the moment (waiting for GCU `topsCtxSetCurrent`)
-2) On `GPTQ` quantized models are supported under multi-gcu setting.
-
-Run `Multi-process` `Multi-GCU` inference (**trail version, not stable**, must running in debug mode, no continued chat at the moment):
-```shell
-cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT llama3 --quant gptq --temperature 0. --penalty 1.0
-
-cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct llama3 --temperature 0. --penalty 1.0
-```
+1) `Multi-GCU` inference (with `Multi-threaded` or `Multi-process`) is not stable at the moment.
+2) Only unquantized and quantized `GPTQ` models are supported under multi-gcu setting.
 
 #### Step 3: 
 
