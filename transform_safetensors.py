@@ -1,5 +1,5 @@
-# example: python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit --dst /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame --bits 8 --method gptq --group 128 --nk true
-# example: python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk False
+# example: python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit --dst /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame --bits 8 --method gptq --group 128 --nk True
+# example: python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
 import torch
 from safetensors.torch import load_file, save_file
 import argparse
@@ -190,7 +190,7 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
                     else:
                         qweight, qzeros = gptq_rearrange_uint4_int32_uint8(tensor, qzeros, scales)
                         key_g_idx = key_prefix + ".g_idx"
-                        g_idx = src_dict[key_g_idx]
+                        g_idx = src_dict[key_g_idx].long()
                         assert torch.all(g_idx[1:] - g_idx[:-1] >= 0).item() and \
                             g_idx[-1] - g_idx[0] + 1 == g_idx.shape[0] / group_size, \
                             "gcu only support g_idx is continuous."
@@ -198,7 +198,7 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
                         qzeros = qzeros[g_idx.cpu()].to(qweight.device)
                         scales = scales[g_idx.cpu()].to(qweight.device)
 
-                    tgt_dict[key] = qweight
+                    tgt_dict[key] = qweight.t().contiguous() if nk else qweight
                     tgt_dict[key_qzeros] = qzeros
                     tgt_dict[key_scales] = scales
                 else:
@@ -281,7 +281,8 @@ def main():
         transform_file(args.src, args.dst, args.bits, args.method, args.group, args.nk)
         shutil.copy2(src_directory + "/config.json", args.dst)
         shutil.copy2(src_directory + "/tokenizer.json", args.dst)
-        shutil.copy2(src_directory + "/tokenizer_config.json", args.dst)
+        if os.path.exists(src_directory + "/tokenizer_config.json"):
+            shutil.copy2(src_directory + "/tokenizer_config.json", args.dst)
         if os.path.exists(src_directory + "/model.safetensors.index.json"):
             shutil.copy2(src_directory + "/model.safetensors.index.json", args.dst)
     except Exception as e:
