@@ -106,31 +106,45 @@ pnpm run dev # run the ChatUI
 Currently, candle-vllm-gcu supports chat serving for the following models on `S60`.
 
 __`List of 1k decoding results:`__
-| Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`)
-|--|--|--|--|--|--|
-| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) |
-| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|
-| #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|
-| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
-| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|
-| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
-| #7 | BigCode/StarCode |TBD|TBD|TBD|
-| #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2** |✅|22 tks/s (14B, **tp==2**)|322 tks/s (14B, **tp==2, bs==32**)|
-| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
-| #11 | Blip-large (Multimodal) |TBD|TBD|TBD|
-| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #13 | **DeepSeek-V2** |✅|TBD|TBD|TBD|
-| #13 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|
+| Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`) | Thoughput (W4A16, `batch size=48`)
+|--|--|--|--|--|--|--|
+| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) | 1060 tks/s|
+| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|TBD|
+| #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|TBD|
+| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|TBD|
+| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|TBD|
+| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|TBD|
+| #7 | BigCode/StarCode |TBD|TBD|TBD|TBD|
+| #8 | ChatGLM |TBD|TBD|TBD|TBD|
+| #9 | **QWen2** |✅|22 tks/s (14B, **tp==2**)|322 tks/s (14B, **tp==2, bs==32**)|TBD|
+| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|TBD|
+| #11 | Blip-large (Multimodal) |TBD|TBD|TBD|TBD|
+| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|TBD|
+| #13 | **DeepSeek-V2** |✅|TBD|TBD|TBD|TBD|
+| #13 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
 
 ## General Usage
-`MODEL_TYPE` = ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
 
-`WEIGHT_FILE_PATH` = Corresponding weight path for the given model type
+[`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]
 
-Parameters **before** `MODEL_TYPE`: used for candle-vllm general config (e.g, port, dtype, kvcache size)
+**Example:**
+```shell
+[RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"] [--weight-path /home/weights/QwQ32B-GPTQ-4Bit] [qwen2] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95]
+```
 
-Parameters **after** `MODEL_TYPE`: used for model config (e.g., sampling parameters, quant)  
+`ENV_PARAM`: RUST_LOG=warn
+
+`BUILD_PARAM`: --release --features gcu,eccl
+
+`PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "2,3"
+
+`MODEL_WEIGHT_PATH`: --weight-path /home/weights/QwQ32B-GPTQ-4Bit
+
+`MODEL_TYPE`: llama3
+
+`MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
+
+where, `MODEL_TYPE` can be ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
 
 ```shell
 cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE>
