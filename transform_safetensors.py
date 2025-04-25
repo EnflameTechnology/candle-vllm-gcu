@@ -153,19 +153,35 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
     """
     if not os.path.exists(src_folder):
         raise FileNotFoundError(f"Source file not found: {src_folder}")
-    
+    update_meta = False
+    json_file_name = ""
+    if os.path.exists(dst_folder + "/model.safetensors.index.json"):
+        meta_file = "model.safetensors.index.json" if dst_folder[-1] == "/" else "/model.safetensors.index.json"
+        import json
+        with open(dst_folder + meta_file) as f:
+            meta_data = json.load(f)
+            json_file_name = dst_folder + meta_file
+            update_meta = True
+    update_meta = False
     print(f"Loading source file: {src_folder}")
     tgt_dict = {}
 
-    for file in os.listdir(src_folder):
-        if not file.endswith(".safetensors") or file.find("model") < 0:
-            continue
+    files = os.listdir(src_folder)
+    files = [k for k in files if k.endswith(".safetensors") and k.find("model") >= 0 ]
+    if len(files) > 1:
+        files = list(sorted(files, key=lambda x: int(x[6:11])))
+
+    unprocessed = {}
+    for file in files:
         f = os.path.join(src_folder, file)
         dst_f = os.path.join(dst_folder, file)
 
         src_dict = load_file(f)
+        if len(unprocessed) > 0:
+            print("processing unfinished: ", unprocessed.keys())
+            src_dict.update(unprocessed)
+            unprocessed = {}
         tgt_dict = {}
-
         for key, tensor in src_dict.items():
             if bits == 8:
                 if key.endswith(".g_idx") or key.endswith(".qzeros"):
@@ -182,30 +198,53 @@ def transform_file(src_folder, dst_folder, bits, method, group_size, nk):
                     print(f"Transforming tensor: {key}")
                     key_prefix = key.replace(".qweight", "")
                     key_qzeros = key_prefix + ".qzeros"
-                    qzeros = src_dict[key_qzeros]
                     key_scales = key_prefix + ".scales"
+                    if key_qzeros in src_dict and key_scales in src_dict:
+                        pass
+                    elif key_qzeros in src_dict:
+                        unprocessed[key] = tensor
+                        unprocessed[key_qzeros] = src_dict[key_qzeros]
+                        continue
+                    else:
+                        unprocessed[key] = tensor
+                        continue
+
+                    qzeros = src_dict[key_qzeros]
                     scales = src_dict[key_scales]
                     if method == "awq":
                         qweight, qzeros = awq_rearrange_uint4_int32_uint8(tensor, qzeros, scales)
+                        if tensor.nbytes == qweight.nbytes:
+                            tensor.data = tensor.data.view(torch.uint8).reshape(qweight.shape)
+                            tensor.data.copy_(qweight.data)
+                            qweight = tensor
                     else:
                         qweight, qzeros = gptq_rearrange_uint4_int32_uint8(tensor, qzeros, scales)
                         key_g_idx = key_prefix + ".g_idx"
-                        g_idx = src_dict[key_g_idx].long()
+                        g_idx = src_dict[key_g_idx]
                         assert torch.all(g_idx[1:] - g_idx[:-1] >= 0).item() and \
                             g_idx[-1] - g_idx[0] + 1 == g_idx.shape[0] / group_size, \
                             "gcu only support g_idx is continuous."
+                        
                         g_idx = g_idx.reshape([-1, group_size])[:, 0]
+                        qweight = qweight.data.view(torch.uint8).reshape(qweight.shape).clone()
+                        g_idx = g_idx.to(torch.long)
                         qzeros = qzeros[g_idx.cpu()].to(qweight.device)
-                        scales = scales[g_idx.cpu()].to(qweight.device)
+                        scales = scales.data[g_idx]
 
+                    qweight, scales, qzeros = qweight.contiguous(), scales.contiguous(), qzeros.contiguous()
                     tgt_dict[key] = qweight.t().contiguous() if nk else qweight
                     tgt_dict[key_qzeros] = qzeros
                     tgt_dict[key_scales] = scales
                 else:
                     tgt_dict[key] = tensor
-
+        if update_meta:
+            for key in tgt_dict.keys():
+                meta_data["weight_map"][key] = file
         print(f"Saving transformed file: {dst_f}")
         save_file(tgt_dict, dst_f)
+    if update_meta:
+        with open(json_file_name, "w") as outfile:
+            json.dump(meta_data, outfile)
     print("Transformation complete.")
 
 import json
@@ -278,13 +317,13 @@ def main():
         src_directory = args.src
         if not os.path.exists(args.dst):
             os.makedirs(args.dst)
+        if os.path.exists(src_directory + "/model.safetensors.index.json"):
+            shutil.copy2(src_directory + "/model.safetensors.index.json", args.dst)
         transform_file(args.src, args.dst, args.bits, args.method, args.group, args.nk)
         shutil.copy2(src_directory + "/config.json", args.dst)
         shutil.copy2(src_directory + "/tokenizer.json", args.dst)
         if os.path.exists(src_directory + "/tokenizer_config.json"):
             shutil.copy2(src_directory + "/tokenizer_config.json", args.dst)
-        if os.path.exists(src_directory + "/model.safetensors.index.json"):
-            shutil.copy2(src_directory + "/model.safetensors.index.json", args.dst)
     except Exception as e:
         print(f"Error: {e}")
 

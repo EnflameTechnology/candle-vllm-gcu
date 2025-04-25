@@ -4,6 +4,76 @@ OpenAI-API compatible chat service for `GCU` platform based on `candle-gcu` and 
 
 ## Getting started
 
+## General Usage
+
+[`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]
+
+**Example:**
+```shell
+[RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"] [--weight-path /home/weights/QwQ32B-GPTQ-4Bit] [qwen2] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95]
+```
+
+`ENV_PARAM`: RUST_LOG=warn
+
+`BUILD_PARAM`: --release --features gcu,eccl
+
+`PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"
+
+`MODEL_WEIGHT_PATH`: --weight-path /home/weights/QwQ32B-GPTQ-4Bit
+
+`MODEL_TYPE`: qwen2
+
+`MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
+
+where, `MODEL_TYPE` can be ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
+
+```shell
+cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE>
+```
+
+Example: 
+```shell
+cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0.7
+```
+
+**or**
+
+`MODEL_ID` = Huggingface model id
+
+```shell
+cargo run --release --features gcu -- --port 2000 --model-id <MODEL_ID> <MODEL_TYPE>
+```
+
+Example: 
+
+You may supply penalty and temperature to the model to prevent potential repetitions, for example:
+
+```shell
+cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
+```
+
+## Run **DeepSeek-R1 (685B) on Lower GCU Memory**, e.g., `8 x S60(8 x 43GB)`
+
+```shell
+#transform awq model to Enflame format using given script
+python3 transform_safetensors.py --src /home/DeepSeek-R1-AWQ --dst /home/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
+```
+
+```shell
+#running on 8 x S60 (8 x 43GB) with cpu offloading (offload 11 experts for each rank)
+RUST_LOG=warn cargo run --release --features gcu,eccl -- --log --multi-process --dtype bf16 --port 2000 --device-ids "0,1,2,3,4,5,6,7" --weight-path /home/DeepSeek-R1-AWQ-Enflame deep-seek --quant gptq --temperature 0. --penalty 1.0 --num-experts-offload-per-rank 11
+```
+**Note:** This setup offloads 11 experts per rank (a total of 88 out of 256 experts) to the CPU (around 120GB additional host memory required). During inference, these offloaded experts are swapped back (on demand) into GCU memory. If you have even less GCU memory, consider increasing the `--num-experts-offload-per-rank` parameter (up to a maximum of 32 experts per rank in this case).
+
+
+## Demo chat video (on 8 x Scorpio S60 (8 x 43GB), DeepSeek-R1 685B, awq 4bit, 6-8 tokens/s, with CPU offloading)
+<img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="1024pt" height="695pt" >
+
+## Demo chat video (on 1 x Scorpio S60, LLaMa3.1 8B, 8bit, ~30 tokens/s)
+<img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%" height="85%" >
+
+## Detailed Usage
+
 ### Install dependencies
 #### Step 1: Install Rust & download code
 ```
@@ -98,8 +168,6 @@ Launch the Chat UI:
 pnpm run dev # run the ChatUI
 ```
 
-## Demo chat video (on Scorpio S60, LLaMa3.1 8B, 8bit, ~30 tokens/s)
-<img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%" height="85%" >
 
 ## Status
 
@@ -116,60 +184,12 @@ __`List of 1k decoding results:`__
 | #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|TBD|
-| #9 | **QWen2** |✅|22 tks/s (14B, **tp==2**)|322 tks/s (14B, **tp==2, bs==32**)|TBD|
+| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|TBD|
-| #13 | **DeepSeek-V2** |✅|TBD|TBD|TBD|TBD|
+| #13 | **DeepSeek-V3/R1 (awq 685B)** |✅|6-8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|TBD|
 | #13 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
-
-## General Usage
-
-[`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]
-
-**Example:**
-```shell
-[RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"] [--weight-path /home/weights/QwQ32B-GPTQ-4Bit] [qwen2] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95]
-```
-
-`ENV_PARAM`: RUST_LOG=warn
-
-`BUILD_PARAM`: --release --features gcu,eccl
-
-`PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "2,3"
-
-`MODEL_WEIGHT_PATH`: --weight-path /home/weights/QwQ32B-GPTQ-4Bit
-
-`MODEL_TYPE`: llama3
-
-`MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
-
-where, `MODEL_TYPE` can be ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
-
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE>
-```
-
-Example: 
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0.7
-```
-
-**or**
-
-`MODEL_ID` = Huggingface model id
-
-```shell
-cargo run --release --features gcu -- --port 2000 --model-id <MODEL_ID> <MODEL_TYPE>
-```
-
-Example: 
-
-You may supply penalty and temperature to the model to prevent potential repetitions, for example:
-
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
-```
 
 ## Quantized (GPTQ)
 1) Transform GPTQ model (8bit) to Enflame (W8A16) format using `transform_safetensors.py`
