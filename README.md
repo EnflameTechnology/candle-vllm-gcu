@@ -4,20 +4,40 @@ OpenAI-API compatible chat service for `GCU` platform based on `candle-gcu` and 
 
 ## Getting started
 
-## General Usage
+### Build Candle-vLLM-GCU
+
+```shell
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh #install rust, 1.83.0+ required
+sudo apt install libssl-dev pkg-config -y
+sudo ./TopsPlatform_1.4xxxx.run # Install driver, topsruntime and topscc
+dpkg -i eccl_3.4xxx_amd64.deb  # Install ECCL in the environment where candle-vllm-gcu resides.
+
+git clone git@git.enflame.cn:era/candle-vllm-gcu.git
+git submodule update --init --recursive
+cd candle-vllm
+cargo build --release --features gcu,eccl #single-node
+
+#multinode
+sudo apt update
+sudo apt install libopenmpi-dev openmpi-bin -y #install mpi
+sudo apt install clang libclang-dev
+cargo build --release --features gcu,eccl,mpi #build with mpi feature
+```
+
+### Build/Run Parameters
 
 [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]
 
 **Example:**
 ```shell
-[RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"] [--weight-path /home/weights/QwQ32B-GPTQ-4Bit] [qwen2] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95]
+[RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192] [--weight-path /home/weights/QwQ32B-GPTQ-4Bit] [qwen2] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95]
 ```
 
 `ENV_PARAM`: RUST_LOG=warn
 
 `BUILD_PARAM`: --release --features gcu,eccl
 
-`PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1"
+`PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192
 
 `MODEL_WEIGHT_PATH`: --weight-path /home/weights/QwQ32B-GPTQ-4Bit
 
@@ -25,149 +45,15 @@ OpenAI-API compatible chat service for `GCU` platform based on `candle-gcu` and 
 
 `MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
 
-where, `MODEL_TYPE` can be ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
+where, `MODEL_TYPE` in ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "gemma", "yi", "stable-lm", "deep-seek"]
 
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path <WEIGHT_FILE_PATH> <MODEL_TYPE>
-```
+## Demo chat video 
 
-Example: 
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0.7
-```
-
-**or**
-
-`MODEL_ID` = Huggingface model id
-
-```shell
-cargo run --release --features gcu -- --port 2000 --model-id <MODEL_ID> <MODEL_TYPE>
-```
-
-Example: 
-
-You may supply penalty and temperature to the model to prevent potential repetitions, for example:
-
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path /home/mistral_7b/ mistral --penalty 1.1 --temperature 0.7
-```
-
-## Run **DeepSeek-R1 (685B) on Lower GCU Memory**, e.g., `8 x S60(8 x 43GB)`
-
-```shell
-#transform awq model to Enflame format using given script
-python3 transform_safetensors.py --src /home/DeepSeek-R1-AWQ --dst /home/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
-```
-
-```shell
-#running on 8 x S60 (8 x 43GB) with cpu offloading (offload 11 experts for each rank)
-RUST_LOG=warn cargo run --release --features gcu,eccl -- --log --multi-process --dtype bf16 --port 2000 --device-ids "0,1,2,3,4,5,6,7" --weight-path /home/DeepSeek-R1-AWQ-Enflame deep-seek --quant gptq --temperature 0. --penalty 1.0 --num-experts-offload-per-rank 11
-```
-**Note:** This setup offloads 11 experts per rank (a total of 88 out of 256 experts) to the CPU (around 120GB additional host memory required). During inference, these offloaded experts are swapped back (on demand) into GCU memory. If you have even less GCU memory, consider increasing the `--num-experts-offload-per-rank` parameter (up to a maximum of 32 experts per rank in this case).
-
-
-## Demo chat video (on 8 x Scorpio S60 (8 x 43GB), DeepSeek-R1 685B, awq 4bit, 6-8 tokens/s, with CPU offloading)
+**DeepSeek-R1 671/685B (AWQ, ~8 tokens/s, 8 x Scorpio S60 (8 x 48GB))** (offloaded ~120GB weights to CPU memory)
 <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="1024pt" height="695pt" >
 
-## Demo chat video (on 1 x Scorpio S60, LLaMa3.1 8B, 8bit, ~30 tokens/s)
+**LLaMa3.1 8B (AWQ, ~40 tokens/s, 1 x Scorpio S60)**
 <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%" height="85%" >
-
-## Detailed Usage
-
-### Install dependencies
-#### Step 1: Install Rust & download code
-```
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-sudo apt install libssl-dev
-sudo apt install pkg-config
-git clone git@git.enflame.cn:era/candle-vllm-gcu.git
-git submodule update --init --recursive
-```
-
-#### Step 2: Run candle-vllm service on GCU
-
-Run `Unquantized` models
-```shell
-cd candle-vllm
-cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.
-```
-
-Run `Quantized` models (transform weight to Enflame format using the given script, `dtype` is used for kv cache and attention)
-```shell
-cd candle-vllm
-cargo run --release --features gcu -- --port 2000 --dtype bf16 --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-Enflame/ llama3 --quant gptq --temperature 0. --penalty 1.
-```
-
-Run **DeepSeek** MoE models
-```shell
-cargo run --release --features gcu -- --port 2000 --weight-path /home/DeepSeek-V2-Lite-Chat deep-seek --penalty 1.0 --temperature 0.
-```
-
-Run `Multi-threaded` `Multi-GCU` inference:
-
-```shell
-dpkg -i eccl_3.1xxx_amd64.deb  # Install ECCL in the environment where candle-vllm-gcu resides.
-```
-
-```shell
-cargo run --release --features gcu,eccl -- --port 2000 --dtype bf16 --device-ids "0,1" --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
-```
-
-For large batch processing, increase the `holding time` (e.g., 1000 ms, holding more requests as a batch) (you may also increase kv cache by setting `kvcache-mem-gpu`)
-```shell
-cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --holding-time 1000 --weight-path /home/weights/QwQ-32B/ qwen2 --temperature 0.8 --penalty 1.0
-```
-
-Run `Multi-process` `Multi-GCU` inference:
-```shell
-cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct-GPTQ-EnflameT llama3 --quant gptq --temperature 0. --penalty 1.0
-
-cargo run --features gcu,eccl --dtype bf16 --port 2000 --device-ids "0,1" --multi-process --weight-path /home/weights/Meta-Llama-3.1-8B-Instruct llama3 --temperature 0. --penalty 1.0
-```
-
-Run `Multi-threaded` `Multi-GCU` inference for `quantized models`
-```shell
-cargo run --release --features gcu,eccl -- --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/weights/DeepSeek-R1-Distill-Qwen-14B-GPTQ-Enflame/ qwen2 --quant gptq --temperature 0.8 --penalty 1.0 --top-k 32 --top-p 0.9
-```
-
-**Note:** 
-1) `Multi-GCU` inference (with `Multi-threaded` or `Multi-process`) is not stable at the moment.
-2) Only unquantized and quantized `GPTQ` models are supported under multi-gcu setting.
-
-#### Step 3: 
-
-__Option 1:__ Chat with Chat.py (recommended)
-
-Install API and chatbot dependencies (openai package is only used for local chat with candle-vllm)
-```shell
-python3 -m pip install openai
-python3 -m pip install rich
-python3 -m pip install click
-```
-
-Chat with the mini chatbot
-```shell
-python3 examples/chat.py
-```
-
-__Option 2:__ Chat with ChatUI
-
-Install ChatUI and its dependencies:
-
-```
-cd candle-vllm-demo
-apt install npm #install npm if needed
-npm install n -g #update node js if needed
-n stable #update node js if needed
-npm i -g pnpm #install pnpm manager
-pnpm install #install ChatUI dependencies
-```
-
-Launch the Chat UI:
-```
-pnpm run dev # run the ChatUI
-```
-
 
 ## Status
 
@@ -188,8 +74,118 @@ __`List of 1k decoding results:`__
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|TBD|
 | #11 | Blip-large (Multimodal) |TBD|TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|TBD|
-| #13 | **DeepSeek-V3/R1 (awq 685B)** |✅|6-8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|TBD|
-| #13 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
+| #13 | **DeepSeek-V3/R1** (awq 671/685B, `offloading`) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|TBD|
+| #14 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
+
+## Detailed Usage
+
+Run **Uncompressed** models
+```shell
+target/release/candle-vllm --port 2000 --weight-path /home/DeepSeek-R1-Distill-Llama-8B/ llama3 --temperature 0. --penalty 1.0
+```
+
+Run **GPTQ models**
+```shell
+python3 transform_safetensors.py --src /home/DeepSeek-R1-Distill-Qwen-14B-GPTQ_8bit --dst /home/DeepSeek-R1-Distill-Qwen-14B-GPTQ_8bit-Enflame --bits 8 --method gptq --group 128 --nk True
+target/release/candle-vllm --dtype bf16 --port 2000 --weight-path /home/DeepSeek-R1-Distill-Qwen-14B-GPTQ_8bit-Enflame qwen2 --quant gptq --temperature 0. --penalty 1.0
+```
+
+Run **AWQ models**,
+```shell
+python3 transform_safetensors.py --src /home/Llama3.1-8B-AWQ --dst /home/Llama3.1-8B-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
+
+target/release/candle-vllm --multi-process --dtype f16 --port 2000 --device-ids "0" --weight-path /home/Llama3.1-8B-AWQ llama3 --quant awq --temperature 0. --penalty 1.0
+```
+
+You may also run specific model using **Huggingface model-id**, e.g.,
+```shell
+target/release/candle-vllm --port 2000 --model-id meta-llama/Llama-2-7b-chat-hf llama
+target/release/candle-vllm --port 2000 --model-id avoroshilov/DeepSeek-R1-Distill-Qwen-14B-GPTQ_4bit-128g --quant gptq --penalty 1.0 --temperature 0.
+```
+
+Run **Multi-process Multi-GPU**
+
+```shell
+target/release/candle-vllm --multi-process --port 2000 --device-ids "0,1" --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
+```
+
+```shell
+target/release/candle-vllm --multi-process --dtype bf16 --port 2000 --device-ids "0,1" --weight-path /home/Meta-Llama-3.1-8B-Instruct-GPTQ-INT4/ llama3 --quant gptq --temperature 0. --penalty 1.0
+```
+
+Run **Multi-threaded Multi-GPU** (for debug purpose)
+```shell
+#simply remove the "--multi-process"
+target/debug/candle-vllm --port 2000 --device-ids "0,1" --weight-path /home/Meta-Llama-3.1-8B-Instruct/ llama3 --temperature 0. --penalty 1.0
+```
+**Note:** number of GPUs (`--device-ids`) used must be aligned to 2^n (e.g., 2, 4, or 8).
+
+If you encountered problems under Multi-threaded Multi-GPU mode, you may:
+```shell
+export ECCL_P2P_DISABLE=1 # disable p2p cause this feature can cause illegal memory access in certain environments
+```
+
+Run **DeepSeek-R1 (671B/685B) on Lower GCU Memory Setups**, e.g., **single-node** with `8 x S60(48GB)`
+```shell
+python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ/ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
+
+RUST_LOG=warn cargo run --release --features gcu,eccl -- --log --multi-process --dtype bf16 --port 2000 --device-ids "0,1,2,3,4,5,6,7" --weight-path /data/DeepSeek-R1-AWQ-Enflame/ deep-seek --quant awq --temperature 0. --penalty 1.0 --num-experts-offload-per-rank 11
+```
+**Note:** This setup offloads 11 experts per rank (a total of 88 out of 256 experts) to the CPU (around 125GB additional host memory required). During inference, these offloaded experts are swapped back into GCU memory as needed. If you have even less GCU memory, consider increasing the `--num-experts-offload-per-rank` parameter (up to a maximum of 32 experts per rank in this case).
+
+Run **DeepSeek-R1 (671B/685B) on multi-node**, e.g., (`8 x S60(48GB)` x 2 nodes)
+```shell
+sudo apt update
+sudo apt install libopenmpi-dev openmpi-bin -y #install mpi
+sudo apt install clang libclang-dev
+cargo build --release --features gcu,eccl,mpi #build with mpi feature
+python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ/ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True #convert awq deepseek to Enflame format
+#running multinode inference with mpi runner
+sudo mpirun -np 16 -x RUST_LOG=info -hostfile ./hostfile --allow-run-as-root -bind-to none -map-by slot --mca plm_rsh_args "-p 22" --mca btl_tcp_if_include %NET_INTERFACE% target/release/candle-vllm --log --multi-process --dtype bf16 --port 2000 --device-ids "0,1,2,3,4,5,6,7" --weight-path /data/DeepSeek-R1-AWQ-Enflame/ deep-seek --quant awq --temperature 0. --penalty 1.0
+```
+**Note**: MPI Runner requires `identical` hardware and software configurations for all nodes, please ensure weights and candle-vllm binaries located in the identical folders in difference nodes. The the nodes need to be ssh (port 22 in this case) passwordless for each other (root user if `--allow-run-as-root`). `%NET_INTERFACE%` is the active network interface obtained through command 'ifconfig -a'. You may disable InfiniBand if it's not available in the nodes by insert env "-x ECCL_IB_DISABLE=1". Where, `hostfile` can be defined as:
+
+Example (two nodes, each with 8 GCUs)
+```
+192.168.1.100 slots=8
+192.168.1.101 slots=8
+```
+
+### Chat frontend (any frontend compatible with openai API, simple options available below):
+#### Option 1: Chat with Chat.py (for simple tests)
+Install API and chatbot dependencies (openai package is only used for local chat with candle-vllm)
+
+```shell
+python3 -m pip install openai rich click
+```
+
+__Option 2:__ Chat with mini chatbot
+
+```shell
+python3 examples/chat.py #plain text
+```
+
+```shell
+python3 examples/chat.py --live #live update with Markdown, may cause flick
+```
+__Option 2:__ Chat with ChatUI
+
+Install ChatUI and its dependencies:
+
+```
+cd candle-vllm-demo
+apt install npm #install npm if needed
+npm install n -g #update node js if needed
+n stable #update node js if needed
+npm i -g pnpm #install pnpm manager
+pnpm install #install ChatUI dependencies
+```
+
+Launch the Chat UI:
+```
+pnpm run dev # run the ChatUI
+```
+
 
 ## Quantized (GPTQ)
 1) Transform GPTQ model (8bit) to Enflame (W8A16) format using `transform_safetensors.py`
