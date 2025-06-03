@@ -70,9 +70,9 @@ __`List of 1k decoding results:`__
 | #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|TBD|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|TBD|
-| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
+| #9 | **QWen2/Qwen3** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
 | #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|TBD|
-| #11 | Blip-large (Multimodal) |TBD|TBD|TBD|TBD|
+| #11 | GLM4 |✅|TBD|TBD|TBD|
 | #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|TBD|
 | #13 | **DeepSeek-V3/R1** (awq 671/685B, `offloading`) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|TBD|
 | #14 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
