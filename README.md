@@ -60,22 +60,23 @@ where, `MODEL_TYPE` in ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "
 Currently, candle-vllm-gcu supports chat serving for the following models on `S60`.
 
 __`List of 1k decoding results:`__
-| Model ID | Model Type | Supported | Speed (BF16, `batch size=1`)| Thoughput (BF16, `batch size=16`) | Thoughput (W8A16, `batch size=16`) | Thoughput (W4A16, `batch size=48`)
-|--|--|--|--|--|--|--|
-| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 305 tks/s (LLaMa3.1 8B) | 375 tks/s (LLaMa3.1 8B) | 1060 tks/s|
-| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|TBD|
+| Model ID | Model Type | Supported | Speed (BF16, `bs=1`)| Thoughput (BF16, `bs=16`) | Thoughput (W4A16)
+|--|--|--|--|--|--|
+| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 375 tks/s (LLaMa3.1 8B) | 41 tks/s (**bs=1**), 1185 tks/s (**bs=48**)|
+| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|
 | #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|TBD|
-| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|TBD|
-| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|TBD|
-| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|TBD|
-| #7 | BigCode/StarCode |TBD|TBD|TBD|TBD|
-| #8 | ChatGLM |TBD|TBD|TBD|TBD|
-| #9 | **QWen2/Qwen3** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
-| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|TBD|
-| #11 | GLM4 |✅|TBD|TBD|TBD|
-| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|TBD|
-| #13 | **DeepSeek-V3/R1** (awq 671/685B, `offloading`) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|TBD|
-| #14 | **QwQ-32B** |✅|10 tokens (**tp=2**)|186 tokens (**tp=2, bs=32**)|TBD|TBD|
+| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
+| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|
+| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
+| #7 | BigCode/StarCode |TBD|TBD|TBD|
+| #8 | ChatGLM |TBD|TBD|TBD|
+| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
+| #9 | **Qwen3** |✅|23 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|TBD|
+| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
+| #11 | GLM4 |✅|TBD|TBD|
+| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
+| #13 | **DeepSeek-V3/R1** (awq 671/685B, `offloading`) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
+| #14 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
 
 ## Detailed Usage
 
@@ -173,6 +174,7 @@ __Option 2:__ Chat with ChatUI
 Install ChatUI and its dependencies:
 
 ```
+git clone https://github.com/guoqingbao/candle-vllm-demo.git
 cd candle-vllm-demo
 apt install npm #install npm if needed
 npm install n -g #update node js if needed
