@@ -41,28 +41,45 @@ cargo build --release --features gcu,eccl,mpi
 
 ---
 
-## ⚙️ Run Parameters
+## ✅ Supported Features
 
-**Command Format:**
+- ✅ **Multi-rank** (Multi-GPUs, Multi-Nodes)
+- ✅ **Quantization** (GPTQ, AWQ)
+- ✅ **Continuous Batching**
+- ✅ **Paged Attention**
+- ✅ **KV Cache**
+  - ✅ BF16
+  - ✅ FP16
+  - ❌ INT8
+- ✅ **OpenAI-Compatible Server**
+- ❌ **Multimodal Models** 
+- 🛠️ **CUDA Graph** _(Under Development)_
 
-```bash
-[ENV_PARAM] cargo run [BUILD_PARAM] -- [PROGRAM_PARAM] [MODEL_WEIGHT_PATH] [MODEL_TYPE] [MODEL_PARAM]
-```
+## ⚙️ Build and Running Parameters
+- [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]  
+  <details>
+    <summary>Show details</summary>
 
-**Example:**
+    **Example:**
 
-```bash
-RUST_LOG=warn cargo run --release --features gcu,eccl -- \
---multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192 \
---weight-path /home/weights/QwQ32B-GPTQ-4Bit \
-qwen2 --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
-```
+    ```shell
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192] [--weight-path /home/weights/Qwen3-27B-GPTQ-4Bit] [qwen3] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking]
+    ```
 
-Supported `MODEL_TYPE` values:
+    `ENV_PARAM`: RUST_LOG=warn
 
-```
-["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "gemma", "yi", "stable-lm", "deep-seek"]
-```
+    `BUILD_PARAM`: --release --features gcu,eccl
+
+    `PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192
+
+    `MODEL_WEIGHT_PATH`: --weight-path /home/weights/Qwen3-27B-GPTQ-4Bit
+
+    `MODEL_TYPE`: qwen3
+
+    `MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking
+
+    where, `--kvcache-mem-gpu` is the key parameter to control KV cache usage (increase this for large batch); `MODEL_TYPE` in ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
+  </details>
 
 ---
 
@@ -100,70 +117,51 @@ __List of 1k decoding results:__
 
 ## 💡 Usage Examples
 
-<details>
+<details open>
 <summary><strong>Run Uncompressed Models</strong></summary>
 
 ```bash
-target/release/candle-vllm --port 2000 \
---weight-path /home/DeepSeek-R1-Distill-Llama-8B/ \
-llama3 --temperature 0. --penalty 1.0
+target/release/candle-vllm --port 2000 --weight-path /home/DeepSeek-R1-Distill-Llama-8B/ llama3
 ```
 
 </details>
 
-<details>
+<details open>
 <summary><strong>Run GPTQ Quantized Models</strong></summary>
 
 ```bash
+# convert (8bit gptq) model to Enflame format
 python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
-target/release/candle-vllm --dtype bf16 --port 2000 \
---weight-path /path/to/gptq-enflame qwen2 --quant gptq \
---temperature 0. --penalty 1.0
+# run the converted model
+target/release/candle-vllm --dtype bf16 --port 2000 --weight-path /path/to/gptq-enflame qwen2 --quant gptq
 ```
 
 </details>
 
-<details>
+<details open>
 <summary><strong>Run AWQ Quantized Models</strong></summary>
 
 ```bash
+# convert (4bit awq) model to Enflame format
 python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
-target/release/candle-vllm --multi-process --dtype f16 --port 2000 \
---device-ids "0" --weight-path /path/to/awq-enflame llama3 \
---quant awq --temperature 0. --penalty 1.0
+# run the converted model
+target/release/candle-vllm --multi-process --dtype f16 --port 2000 --weight-path /path/to/awq-enflame llama3 --quant awq
 ```
 
 </details>
 
----
-
-## 🧠 In-Situ Quantization (Experimental)
-
-Convert and run raw weights directly in Enflame’s format:
-
-```bash
-cargo run --release --features gcu -- --port 2000 \
---weight-path /home/Meta-Llama-3.1-8B-Instruct/ \
-llama3 --quant q8_0
-```
-
-> ⚠️ *Note: Use `q4_k` for better quantization results. Batched support is still under optimization.*
-
----
-
 ## 🖥️ Multi-GPU & Multi-Node Inference
 
-<details>
+<details open>
 <summary><strong>Multi-Process, Multi-GPU</strong></summary>
 
 ```bash
-target/release/candle-vllm --multi-process --port 2000 \
---device-ids "0,1" --weight-path /path/to/model llama3 \
---temperature 0. --penalty 1.0
+# Use card 0 and card 1
+target/release/candle-vllm --multi-process --port 2000 --device-ids "0,1" --weight-path /path/to/model llama3
 ```
 
 </details>
@@ -178,13 +176,12 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 # Build
 cargo build --release --features gcu,eccl,mpi
 
-# Launch via mpirun
+# Launch via mpirun (make sure that model weights and candle-vllm binary located in the same folder in different machines)
 sudo mpirun -np 16 -x RUST_LOG=info -hostfile ./hostfile \
 --allow-run-as-root -bind-to none -map-by slot \
 --mca btl_tcp_if_include %NET_INTERFACE% \
 target/release/candle-vllm --multi-process --dtype bf16 --port 2000 \
---device-ids "0,1,2,3,4,5,6,7" --weight-path /data/deepseek-enflame \
-deep-seek --quant awq --temperature 0. --penalty 1.0
+--device-ids "0,1,2,3,4,5,6,7" --weight-path /data/deepseek-enflame deep-seek --quant awq
 ```
 
 </details>
@@ -248,7 +245,5 @@ cargo run --release --features gcu -- --port 2000 \
 
 ## 🛠️ TODO
 
-* [x] Optimize generation speed.
-* [ ] Add more quantization format support (`q4_k`, `w4a16`, etc.).
-* [x] Support concurrent multi-user chat sessions.
+* [ ] Add GGUF model support (e.g., `q4_k` quantization).
 * [ ] Extend support to multimodal models.

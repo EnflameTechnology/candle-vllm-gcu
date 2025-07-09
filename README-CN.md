@@ -41,28 +41,47 @@ cargo build --release --features gcu,eccl,mpi
 
 ---
 
-## ⚙️ 启动参数说明
+## ✅ 支持的特性
 
-**命令格式：**
+- ✅ **多卡与多机并行推理**（Multi-GPUs, Multi-Nodes）
+- ✅ **量化支持**（GPTQ、AWQ）
+- ✅ **连续批处理**
+- ✅ **分页注意力机制**
+- ✅ **KV 缓存支持**
+  - ✅ BF16
+  - ✅ FP16
+  - ❌ 暂不支持 INT8
+- ✅ **兼容 OpenAI 接口的服务**
+- ❌ **多模态模型**
+- 🛠️ **CUDA Graph** _(开发中)_
 
-```bash
-[ENV_PARAM] cargo run [BUILD_PARAM] -- [PROGRAM_PARAM] [MODEL_WEIGHT_PATH] [MODEL_TYPE] [MODEL_PARAM]
-```
 
-**示例：**
+## ⚙️ 构建及启动参数说明
 
-```bash
-RUST_LOG=warn cargo run --release --features gcu,eccl -- \
---multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192 \
---weight-path /home/weights/QwQ32B-GPTQ-4Bit \
-qwen2 --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
-```
+- [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]  
+  <details>
+    <summary>显示详情</summary>
 
-支持的 `MODEL_TYPE` 类型：
+    **示例:**
 
-```
-["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "gemma", "yi", "stable-lm", "deep-seek"]
-```
+    ```shell
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192] [--weight-path /home/weights/Qwen3-27B-GPTQ-4Bit] [qwen3] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking]
+    ```
+
+    `ENV_PARAM`: RUST_LOG=warn
+
+    `BUILD_PARAM`: --release --features gcu,eccl
+
+    `PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192
+
+    `MODEL_WEIGHT_PATH`: --weight-path /home/weights/Qwen3-27B-GPTQ-4Bit
+
+    `MODEL_TYPE`: qwen3
+
+    `MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking
+
+    其中，`kvcache-mem-gpu`参数控制KV Cache缓存，长文本或批量推理量请增大缓存；`MODEL_TYPE`可选值为：["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
+  </details>
 
 ---
 
@@ -101,76 +120,59 @@ qwen2 --quant gptq --temperature 0.7 --penalty 1.0 --top-k 40 --top-p 0.95
 
 ## 💡 使用示例
 
-<details>
+<details open>
 <summary><strong>运行未压缩模型</strong></summary>
 
 ```bash
 target/release/candle-vllm --port 2000 \
---weight-path /home/DeepSeek-R1-Distill-Llama-8B/ \
-llama3 --temperature 0. --penalty 1.0
+--weight-path /home/DeepSeek-R1-Distill-Llama-8B/ llama3
 ```
 
 </details>
 
-<details>
+<details open>
 <summary><strong>运行 GPTQ 量化模型</strong></summary>
 
 ```bash
+# 格式转换 （8bit gptq -> Enflame format）
 python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
-target/release/candle-vllm --dtype bf16 --port 2000 \
---weight-path /path/to/gptq-enflame qwen2 --quant gptq \
---temperature 0. --penalty 1.0
+#运行格式转换后的模型
+target/release/candle-vllm --dtype bf16 --port 2000 --weight-path /path/to/gptq-enflame qwen2 --quant gptq
 ```
 
 </details>
 
-<details>
+<details open>
 <summary><strong>运行 AWQ 量化模型</strong></summary>
 
 ```bash
+# 格式转换 （4bit awq -> Enflame format）
 python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
-target/release/candle-vllm --multi-process --dtype f16 --port 2000 \
---device-ids "0" --weight-path /path/to/awq-enflame llama3 \
---quant awq --temperature 0. --penalty 1.0
+#运行格式转换后的模型
+target/release/candle-vllm --multi-process --dtype f16 --port 2000 --weight-path /path/to/awq-enflame llama3 \
+--quant awq
 ```
 
 </details>
-
----
-
-## 🧠 原位量化（实验功能）
-
-将原始权重直接转换为 Enflame 格式并加载运行：
-
-```bash
-cargo run --release --features gcu -- --port 2000 \
---weight-path /home/Meta-Llama-3.1-8B-Instruct/ \
-llama3 --quant q8_0
-```
-
-> ⚠️ *提示：`q4_k` 是更理想的量化格式，目前批处理性能仍在优化中。*
-
----
 
 ## 🖥️ 多卡与多节点推理支持
 
-<details>
+<details open>
 <summary><strong>多进程多卡推理</strong></summary>
 
 ```bash
-target/release/candle-vllm --multi-process --port 2000 \
---device-ids "0,1" --weight-path /path/to/model llama3 \
---temperature 0. --penalty 1.0
+# 指定卡0和卡1
+target/release/candle-vllm --multi-process --port 2000 --device-ids "0,1" --weight-path /path/to/model llama3
 ```
 
 </details>
 
 <details>
-<summary><strong>多节点（MPI）配置</strong></summary>
+<summary><strong>多节点多卡推理（MPI）配置</strong></summary>
 
 ```bash
 # 安装 MPI
@@ -179,13 +181,12 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 # 构建支持 MPI 的版本
 cargo build --release --features gcu,eccl,mpi
 
-# 使用 mpirun 启动
+# 使用 mpirun 启动（确保双机中权重与candle-vllm binary在相同目录）
 sudo mpirun -np 16 -x RUST_LOG=info -hostfile ./hostfile \
 --allow-run-as-root -bind-to none -map-by slot \
 --mca btl_tcp_if_include %NET_INTERFACE% \
 target/release/candle-vllm --multi-process --dtype bf16 --port 2000 \
---device-ids "0,1,2,3,4,5,6,7" --weight-path /data/deepseek-enflame \
-deep-seek --quant awq --temperature 0. --penalty 1.0
+--device-ids "0,1,2,3,4,5,6,7" --weight-path /data/deepseek-enflame deep-seek --quant awq
 ```
 
 </details>
@@ -249,7 +250,5 @@ cargo run --release --features gcu -- --port 2000 \
 
 ## 🛠️ 开发计划（TODO）
 
-* [x] 优化生成速度。
-* [ ] 增加更多量化格式支持（如 `q4_k`、`w4a16`）。
-* [x] 支持多用户同时对话。
+* [ ] 增加GGUF模型支持（如 `q4_k`量化格式）。
 * [ ] 支持多模态模型。
