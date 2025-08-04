@@ -56,29 +56,25 @@ cargo build --release --features gcu,eccl,mpi
 - 🛠️ **CUDA Graph** _(Under Development)_
 
 ## ⚙️ Build and Running Parameters
-- [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`] [`MODEL_TYPE`] [`MODEL_PARAM`]  
-  <details>
+- [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`]
+  <details open>
     <summary>Show details</summary>
 
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192] [--weight-path /home/weights/Qwen3-27B-GPTQ-4Bit] [qwen3] [--quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl
 
-    `PROGRAM_PARAM`：--multi-process --log --dtype bf16 --port 2000 --device-ids "0,1" --kvcache-mem-gpu 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
 
-    `MODEL_WEIGHT_PATH`: --weight-path /home/weights/Qwen3-27B-GPTQ-4Bit
+    `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    `MODEL_TYPE`: qwen3
-
-    `MODEL_PARAM`: --quant gptq --temperature 0.7 --penalty 1.0 --top-k 32 --top-p 0.95 --thinking
-
-    where, `--kvcache-mem-gpu` is the key parameter to control KV cache usage (increase this for large batch); `MODEL_TYPE` in ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); supported model archs include ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
   </details>
 
 ---
@@ -121,7 +117,7 @@ __List of 1k decoding results:__
 <summary><strong>Run Uncompressed Models</strong></summary>
 
 ```bash
-target/release/candle-vllm --port 2000 --weight-path /home/DeepSeek-R1-Distill-Llama-8B/ llama3
+target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/
 ```
 
 </details>
@@ -135,7 +131,7 @@ python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
 # run the converted model
-target/release/candle-vllm --dtype bf16 --port 2000 --weight-path /path/to/gptq-enflame qwen2 --quant gptq
+target/release/candle-vllm --dtype bf16 --p 2000 --w /path/to/gptq-enflame
 ```
 
 </details>
@@ -149,7 +145,7 @@ python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-target/release/candle-vllm --multi-process --dtype f16 --port 2000 --weight-path /path/to/awq-enflame llama3 --quant awq
+target/release/candle-vllm --dtype f16 --p 2000 --w /path/to/awq-enflame
 ```
 
 </details>
@@ -161,7 +157,7 @@ target/release/candle-vllm --multi-process --dtype f16 --port 2000 --weight-path
 
 ```bash
 # Use card 0 and card 1
-target/release/candle-vllm --multi-process --port 2000 --device-ids "0,1" --weight-path /path/to/model llama3
+target/release/candle-vllm --p 2000 --d 0,1 --weight-path /path/to/model
 ```
 
 </details>
@@ -180,8 +176,8 @@ cargo build --release --features gcu,eccl,mpi
 sudo mpirun -np 16 -x RUST_LOG=info -hostfile ./hostfile \
 --allow-run-as-root -bind-to none -map-by slot \
 --mca btl_tcp_if_include %NET_INTERFACE% \
-target/release/candle-vllm --multi-process --dtype bf16 --port 2000 \
---device-ids "0,1,2,3,4,5,6,7" --weight-path /data/deepseek-enflame deep-seek --quant awq
+target/release/candle-vllm --dtype bf16 --p 2000 \
+--d 0,1,2,3,4,5,6,7 --w /data/deepseek-enflame
 ```
 
 </details>
@@ -237,8 +233,8 @@ python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bi
 python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-cargo run --release --features gcu -- --port 2000 \
---weight-path /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame llama3 --quant gptq
+cargo run --release --features gcu -- --p 2000 \
+--w /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame
 ```
 
 ---
