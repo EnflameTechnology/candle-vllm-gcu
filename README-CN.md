@@ -65,18 +65,18 @@ cargo build --release --features gcu,eccl,mpi
     **示例:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--weight-path /home/weights/QwQ-32B]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096] [--weight-path /home/weights/QwQ-32B]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存；支持的模型架构有：["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
+    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）。
   </details>
 
 ---
