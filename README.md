@@ -63,18 +63,18 @@ cargo build --release --features gcu,eccl,mpi
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--w /home/weights/QwQ-32B/]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); supported model archs include ["llama", "llama3", "mistral", "phi2", "phi3", "qwen2", "qwen3", "glm4", "gemma", "gemma3", "yi", "stable-lm", "deep-seek"]
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable).
   </details>
 
 ---
