@@ -47,6 +47,7 @@ cargo build --release --features gcu,eccl,mpi
 - ✅ **Quantization** (GPTQ, AWQ)
 - ✅ **Continuous Batching**
 - ✅ **Paged Attention**
+- ✅ **Chunked Prefill**
 - ✅ **KV Cache**
   - ✅ BF16
   - ✅ FP16
@@ -63,14 +64,14 @@ cargo build --release --features gcu,eccl,mpi
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096] [--w /home/weights/QwQ-32B/]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 

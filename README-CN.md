@@ -47,6 +47,7 @@ cargo build --release --features gcu,eccl,mpi
 - ✅ **量化支持**（GPTQ、AWQ）
 - ✅ **连续批处理**
 - ✅ **分页注意力机制**
+- ✅ **分块预填充**
 - ✅ **KV 缓存支持**
   - ✅ BF16
   - ✅ FP16
@@ -65,14 +66,14 @@ cargo build --release --features gcu,eccl,mpi
     **示例:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096] [--weight-path /home/weights/QwQ-32B]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--weight-path /home/weights/QwQ-32B]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefill-chunk-size 4096
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
