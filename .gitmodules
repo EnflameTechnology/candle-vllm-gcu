@@ -6,4 +6,4 @@
 	path = candle-vllm
 	url = git@git.enflame.cn:guoqing.bao/candle-vllm.git
 	ignore = dirty
-	branch = main
+	branch = enflame
