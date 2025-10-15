@@ -1,7 +1,3 @@
-[submodule "candle-gcu"]
-	path = candle-gcu
-	url = git@github.com:EnflameTechnology/candle-gcu.git
-	ignore = dirty
 [submodule "candle-vllm"]
 	path = candle-vllm
 	url = git@github.com:EnflameTechnology/candle-vllm.git
