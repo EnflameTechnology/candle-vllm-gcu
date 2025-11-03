@@ -21,8 +21,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 sudo apt install libssl-dev pkg-config -y
 
 # Install Enflame's drivers and runtime
-sudo ./TopsPlatform_1.4.xxxx.run
-dpkg -i eccl_3.4.xxx_amd64.deb
+sudo ./TopsPlatform_1.4.5.xxxx.run
+dpkg -i eccl_3.5.xxx_amd64.deb
+
+# Install bindgen
+cargo install bindgen-cli
 
 # Clone and build the project
 git clone git@git.enflame.cn:era/candle-vllm-gcu.git
