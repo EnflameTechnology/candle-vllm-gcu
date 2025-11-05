@@ -83,9 +83,9 @@ cargo build --release --features gcu,eccl,mpi
 
 ## 🎥 Demo Chat Videos
 
-**🔷 DeepSeek-R1 685B (AWQ, \~8 tokens/s, 8 x Enflame S60, offloaded \~120GB to CPU)** <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="1024pt" height="695pt" >
+**🔷 DeepSeek-R1 685B (AWQ, \~8 tokens/s, 8 x Enflame S60, offloaded \~120GB to CPU)** <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="85%">
 
-**🔷 LLaMa3.1 8B (AWQ, \~40 tokens/s, 1 x Enflame S60)** <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%" height="85%" >
+**🔷 LLaMa3.1 8B (AWQ, \~40 tokens/s, 1 x Enflame S60)** <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%">
 
 ---
 
@@ -207,6 +207,10 @@ aichat --serve
 # paste candle-vllm API Base url, like http://0.0.0.0:2000/v1/ (API Key: empty, LLMs to include: default)
 # click "LLM Playground" url
 ```
+
+
+https://github.com/user-attachments/assets/6fbad80b-e4d8-453f-b50d-50f61fa8c4f3
+
 
 ---
 
