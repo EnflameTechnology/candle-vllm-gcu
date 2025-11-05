@@ -85,9 +85,9 @@ cargo build --release --features gcu,eccl,mpi
 
 ## 🎥 聊天演示视频
 
-**🔷 DeepSeek-R1 685B（AWQ，约 8 tokens/s，8 张 Enflame S60，约 120GB 权重卸载到 CPU内存）** <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="1024pt" height="695pt" >
+**🔷 DeepSeek-R1 685B（AWQ，约 8 tokens/s，8 张 Enflame S60-48G，约 120GB 权重卸载到 CPU内存）** <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="85%">
 
-**🔷 LLaMa3.1 8B（AWQ，约 40 tokens/s，1 张 Enflame S60）** <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%" height="85%" >
+**🔷 LLaMa3.1 8B（AWQ，约 40 tokens/s，1 张 Enflame S60-48G）** <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%">
 
 ---
 
@@ -211,6 +211,8 @@ aichat --serve
 # 将 candle-vllm API 地址（如 http://0.0.0.0:2000/v1/）填入， (API Key为空, `LLMs to include`选择default)
 # 点击 aichat生成的 "LLM Playground" URL地址即可
 ```
+
+https://github.com/user-attachments/assets/6fbad80b-e4d8-453f-b50d-50f61fa8c4f3
 
 ---
 
