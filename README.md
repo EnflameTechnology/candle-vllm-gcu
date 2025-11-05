@@ -14,7 +14,7 @@
 ### 🔧 Build Candle-VLLM-GCU
 
 ```bash
-# Install Rust (version 1.83.0 or higher)
+# Install Rust (version 1.88.0 or higher)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install required system dependencies
@@ -27,9 +27,7 @@ dpkg -i eccl_3.5.xxx_amd64.deb
 # Install bindgen
 cargo install bindgen-cli
 
-# Clone and build the project
-git clone git@git.enflame.cn:era/candle-vllm-gcu.git
-cd candle-vllm-gcu
+# Update sub-project
 git submodule update --init --recursive
 cd candle-vllm
 
@@ -198,16 +196,16 @@ python3 examples/chat.py
 python3 examples/chat.py --live # with markdown support
 ```
 
-### Option 2: Chat UI
+### Option 2: Chat UI with history
 
 ```bash
-git clone https://github.com/guoqingbao/candle-vllm-demo.git
-cd candle-vllm-demo
-apt install npm
-npm install -g n && n stable
-npm install -g pnpm
-pnpm install
-pnpm run dev
+# install Rust aichat
+cargo install aichat
+
+aichat --serve
+# select `openai-compatible`, provide name `candle-vllm`
+# paste candle-vllm API Base url, like http://0.0.0.0:2000/v1/ (API Key: empty, LLMs to include: default)
+# click "LLM Playground" url
 ```
 
 ---

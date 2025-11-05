@@ -14,7 +14,7 @@
 ### 🔧 构建 Candle-vLLM-GCU
 
 ```bash
-# 安装 Rust（需版本 1.83.0 或更高）
+# 安装 Rust（需版本 1.88.0 或更高）
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # 安装系统依赖项
@@ -24,9 +24,10 @@ sudo apt install libssl-dev pkg-config -y
 sudo ./TopsPlatform_1.4.xxxx.run
 dpkg -i eccl_3.4.xxx_amd64.deb
 
-# 克隆并构建项目
-git clone git@git.enflame.cn:era/candle-vllm-gcu.git
-cd candle-vllm-gcu
+# Install bindgen
+cargo install bindgen-cli
+
+# 更新子项目
 git submodule update --init --recursive
 cd candle-vllm
 
@@ -199,16 +200,16 @@ python3 examples/chat.py
 python3 examples/chat.py --live # Markdown 实时渲染支持
 ```
 
-### 选项 2：使用 Chat UI
+### 选项 2：使用 Chat UI (带聊天记录功能)
 
 ```bash
-git clone https://github.com/guoqingbao/candle-vllm-demo.git
-cd candle-vllm-demo
-apt install npm
-npm install -g n && n stable
-npm install -g pnpm
-pnpm install
-pnpm run dev
+# 安装Rust aichat
+cargo install aichat
+
+aichat --serve
+# 选择 `openai-compatible`模式, provide name 填写`candle-vllm`
+# 将 candle-vllm API 地址（如 http://0.0.0.0:2000/v1/）填入， (API Key为空, `LLMs to include`选择default)
+# 点击 aichat生成的 "LLM Playground" URL地址即可
 ```
 
 ---
