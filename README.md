@@ -34,6 +34,9 @@ cd candle-vllm
 # Build for single-node setup
 cargo build --release --features gcu,eccl
 
+# Build with cuda graph
+cargo build --release --features gcu,eccl,graph
+
 # Build for multi-node support (MPI)
 sudo apt update
 sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
