@@ -34,6 +34,9 @@ cd candle-vllm
 # 构建适用于单节点（单卡或单机多卡）
 cargo build --release --features gcu,eccl
 
+# 构建适用于单节点（+CUDA Graph特性）
+cargo build --release --features gcu,eccl,graph
+
 # 构建适用于多节点（MPI，多机多卡）支持版本
 sudo apt update
 sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
