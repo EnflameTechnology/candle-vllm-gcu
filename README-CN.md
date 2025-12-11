@@ -43,6 +43,14 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
+#### 构建包含Flash Attention特性
+[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
+```bash
+dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
+# 启用 falsh-attn 特性
+cargo build --release --features gcu,eccl,graph,flash-attn
+```
+
 ---
 
 ## ✅ 支持的特性
@@ -70,12 +78,12 @@ cargo build --release --features gcu,eccl,mpi
     **示例:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--weight-path /home/weights/QwQ-32B]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flash-attn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--weight-path /home/weights/QwQ-32B]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
-    `BUILD_PARAM`: --release --features gcu,eccl
+    `BUILD_PARAM`: --release --features gcu,eccl,flash-attn
 
     `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
 
