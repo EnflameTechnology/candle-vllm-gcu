@@ -43,6 +43,14 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
+#### Build with Flash Attention
+[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
+```bash
+dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
+# Enable falsh-attn feature
+cargo build --release --features gcu,eccl,graph,flash-attn
+```
+
 ---
 
 ## ✅ Supported Features
