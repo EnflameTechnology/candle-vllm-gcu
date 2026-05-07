@@ -48,7 +48,7 @@ cargo build --release --features gcu,eccl,mpi
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
 # Enable falsh-attn feature
-cargo build --release --features gcu,eccl,graph,flash-attn
+cargo build --release --features gcu,eccl,graph,flashattn
 ```
 
 ---
@@ -59,7 +59,9 @@ cargo build --release --features gcu,eccl,graph,flash-attn
 - ✅ **Quantization** (GPTQ, AWQ)
 - ✅ **Continuous Batching**
 - ✅ **Paged Attention**
+- ✅ **Flash Attention**
 - ✅ **Chunked Prefill**
+- ✅ **Prefix Caching**
 - ✅ **KV Cache**
   - ✅ BF16
   - ✅ FP16
