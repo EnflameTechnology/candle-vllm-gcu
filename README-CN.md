@@ -21,8 +21,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 sudo apt install libssl-dev pkg-config -y
 
 # 安装燧原驱动与运行时环境
-sudo ./TopsPlatform_1.4.xxxx.run
-dpkg -i eccl_3.4.xxx_amd64.deb
+sudo ./TopsPlatform_1.7.*.run
+dpkg -i eccl_3.6.*.deb
 
 # Install bindgen
 cargo install bindgen-cli
@@ -43,14 +43,18 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
-#### 构建包含Flash Attention特性
+#### 构建包含Flash Attention特性（可选）
 [下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
-# 启用 falsh-attn 特性
-cargo build --release --features gcu,eccl,graph,flash-attn
+# 启用 falsh-attn 特性 (与graph特性不兼容)
+cargo build --release --features gcu,eccl,flashattn
 ```
-
+#### 构建使用TopsAten算子库（可选）
+```bash
+dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
+cargo build --release --features gcu,eccl,flashattn,aten
+```
 ---
 
 ## ✅ 支持的特性
@@ -78,18 +82,18 @@ cargo build --release --features gcu,eccl,graph,flash-attn
     **示例:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flash-attn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--weight-path /home/weights/QwQ-32B]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefix-cache] [--weight-path /home/weights/QwQ-32B]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
-    `BUILD_PARAM`: --release --features gcu,eccl,flash-attn
+    `BUILD_PARAM`: --release --features gcu,eccl,flashattn
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --prefix-cache --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）。
+    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）; `--prefix-cache`启用前缀缓存。
   </details>
 
 ---
@@ -134,7 +138,11 @@ cargo build --release --features gcu,eccl,graph,flash-attn
 
 ```bash
 target/release/candle-vllm --p 2000 \
---w /home/DeepSeek-R1-Distill-Llama-8B/
+  --w /home/DeepSeek-R1-Distill-Llama-8B/ --prefix-cache
+```
+
+```bash
+target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --prefix-cache
 ```
 
 </details>

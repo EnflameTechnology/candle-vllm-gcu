@@ -21,8 +21,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 sudo apt install libssl-dev pkg-config -y
 
 # Install Enflame's drivers and runtime
-sudo ./TopsPlatform_1.4.5.xxxx.run
-dpkg -i eccl_3.5.xxx_amd64.deb
+sudo ./TopsPlatform_1.7.*.run
+dpkg -i eccl_3.6.*.deb
 
 # Install bindgen
 cargo install bindgen-cli
@@ -43,12 +43,18 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
-#### Build with Flash Attention
+#### Build with Flash Attention (optional)
 [Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
-# Enable falsh-attn feature
-cargo build --release --features gcu,eccl,graph,flashattn
+# Enable falsh-attn feature (not compatible with graph feature)
+cargo build --release --features gcu,eccl,flashattn
+```
+
+#### Build with TopsAten (optional)
+```bash
+dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
+cargo build --release --features gcu,eccl,flashattn,aten
 ```
 
 ---
@@ -78,18 +84,18 @@ cargo build --release --features gcu,eccl,graph,flashattn
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192] [--w /home/weights/QwQ-32B/]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefix-cache] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
-    `BUILD_PARAM`: --release --features gcu,eccl
+    `BUILD_PARAM`: --release --features gcu,eccl,flashattn
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --prefix-cache --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable).
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable), `--prefix-cache` enable prefix caching.
   </details>
 
 ---
@@ -132,7 +138,11 @@ __List of 1k decoding results:__
 <summary><strong>Run Uncompressed Models</strong></summary>
 
 ```bash
-target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/
+target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --prefix-cache
+```
+
+```bash
+target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --prefix-cache
 ```
 
 </details>
@@ -146,7 +156,7 @@ python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
 # run the converted model
-target/release/candle-vllm --dtype bf16 --p 2000 --w /path/to/gptq-enflame
+target/release/candle-vllm --p 2000 --w /path/to/gptq-enflame
 ```
 
 </details>
@@ -160,7 +170,7 @@ python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-target/release/candle-vllm --dtype f16 --p 2000 --w /path/to/awq-enflame
+target/release/candle-vllm --p 2000 --w /path/to/awq-enflame
 ```
 
 </details>
