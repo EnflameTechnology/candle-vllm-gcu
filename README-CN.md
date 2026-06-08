@@ -82,18 +82,18 @@ cargo build --release --features gcu,eccl,flashattn,aten
     **示例:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefix-cache] [--weight-path /home/weights/QwQ-32B]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --ui-server] [--weight-path /home/weights/QwQ-32B]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl,flashattn
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --prefix-cache --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --ui-server --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）; `--prefix-cache`启用前缀缓存。
+    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--mem`参数控制KV Cache缓存，长文本或批量推理量请增大缓存; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）; `--ui-server`同时启动ChatGPT风格前端网站。
   </details>
 
 ---
@@ -138,11 +138,11 @@ cargo build --release --features gcu,eccl,flashattn,aten
 
 ```bash
 target/release/candle-vllm --p 2000 \
-  --w /home/DeepSeek-R1-Distill-Llama-8B/ --prefix-cache
+  --w /home/DeepSeek-R1-Distill-Llama-8B/ --ui-server
 ```
 
 ```bash
-target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --prefix-cache
+target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --ui-server
 ```
 
 </details>
@@ -156,7 +156,7 @@ python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
 #运行格式转换后的模型
-target/release/candle-vllm --dtype bf16 --p 2000 --w /path/to/gptq-enflame
+target/release/candle-vllm --dtype bf16 --p 2000 --w /path/to/gptq-enflame --ui-server
 ```
 
 </details>
@@ -170,7 +170,7 @@ python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
 #运行格式转换后的模型
-target/release/candle-vllm --dtype f16 --p 2000 --w /path/to/awq-enflame
+target/release/candle-vllm --dtype f16 --p 2000 --w /path/to/awq-enflame --ui-server
 ```
 
 </details>
@@ -182,7 +182,7 @@ target/release/candle-vllm --dtype f16 --p 2000 --w /path/to/awq-enflame
 
 ```bash
 # 指定卡0和卡1
-target/release/candle-vllm --p 2000 --d 0,1 --w /path/to/model
+target/release/candle-vllm --p 2000 --d 0,1 --w /path/to/model --ui-server
 ```
 
 </details>

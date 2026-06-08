@@ -84,18 +84,18 @@ cargo build --release --features gcu,eccl,flashattn,aten
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --prefix-cache] [--w /home/weights/QwQ-32B/]
+    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --ui-server] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
     `BUILD_PARAM`: --release --features gcu,eccl,flashattn
 
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --prefix-cache --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable), `--prefix-cache` enable prefix caching.
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable); `--ui-server` start with a ChatGPT-like WebUI.
   </details>
 
 ---
@@ -138,11 +138,11 @@ __List of 1k decoding results:__
 <summary><strong>Run Uncompressed Models</strong></summary>
 
 ```bash
-target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --prefix-cache
+target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --ui-server
 ```
 
 ```bash
-target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --prefix-cache
+target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1
 ```
 
 </details>
@@ -156,7 +156,7 @@ python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
 # run the converted model
-target/release/candle-vllm --p 2000 --w /path/to/gptq-enflame
+target/release/candle-vllm --p 2000 --w /path/to/gptq-enflame --ui-server
 ```
 
 </details>
@@ -170,7 +170,7 @@ python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-target/release/candle-vllm --p 2000 --w /path/to/awq-enflame
+target/release/candle-vllm --p 2000 --w /path/to/awq-enflame --ui-server
 ```
 
 </details>
@@ -182,7 +182,7 @@ target/release/candle-vllm --p 2000 --w /path/to/awq-enflame
 
 ```bash
 # Use card 0 and card 1
-target/release/candle-vllm --p 2000 --d 0,1 --weight-path /path/to/model
+target/release/candle-vllm --p 2000 --d 0,1 --weight-path /path/to/model --ui-server
 ```
 
 </details>
