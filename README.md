@@ -43,18 +43,18 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
-#### Build with Flash Attention (optional)
+#### Build with TopsAten (optional)
+```bash
+dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
+cargo build --release --features gcu,eccl,aten
+```
+
+#### Build with Flash Attention (optional, experimental)
 [Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
 # Enable falsh-attn feature (not compatible with graph feature)
 cargo build --release --features gcu,eccl,flashattn
-```
-
-#### Build with TopsAten (optional)
-```bash
-dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
-cargo build --release --features gcu,eccl,flashattn,aten
 ```
 
 ---
@@ -143,6 +143,12 @@ target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --ui
 
 ```bash
 target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1
+```
+
+Qwen3.5/3.6
+
+```bash
+target/release/candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
 ```
 
 </details>
