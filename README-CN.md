@@ -43,17 +43,18 @@ sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
 cargo build --release --features gcu,eccl,mpi
 ```
 
-#### 构建包含Flash Attention特性（可选）
+#### 构建使用TopsAten算子库（可选）
+```bash
+dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
+cargo build --release --features gcu,eccl,aten
+```
+
+#### 构建包含Flash Attention特性（可选，实验性质）
 [下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
 # 启用 falsh-attn 特性 (与graph特性不兼容)
 cargo build --release --features gcu,eccl,flashattn
-```
-#### 构建使用TopsAten算子库（可选）
-```bash
-dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
-cargo build --release --features gcu,eccl,flashattn,aten
 ```
 ---
 
@@ -143,6 +144,12 @@ target/release/candle-vllm --p 2000 \
 
 ```bash
 target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1 --ui-server
+```
+
+Qwen3.5/3.6
+
+```bash
+target/release/candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
 ```
 
 </details>
