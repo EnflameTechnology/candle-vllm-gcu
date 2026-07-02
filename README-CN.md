@@ -31,16 +31,11 @@ cargo install bindgen-cli
 git submodule update --init --recursive
 cd candle-vllm
 
-# 构建适用于单节点（单卡或单机多卡）
+# 基础构建
 cargo build --release --features gcu,eccl
 
-# 构建适用于单节点（+CUDA Graph特性）
+# +CUDA Graph特性
 cargo build --release --features gcu,eccl,graph
-
-# 构建适用于多节点（MPI，多机多卡）支持版本
-sudo apt update
-sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
-cargo build --release --features gcu,eccl,mpi
 ```
 
 #### 构建使用TopsAten算子库（可选）
@@ -49,12 +44,12 @@ dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
 cargo build --release --features gcu,eccl,aten
 ```
 
-#### 构建包含Flash Attention特性（可选，实验性质）
-[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
+#### 构建包含Flash Attention特性（可选）
+[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
-# 启用 falsh-attn 特性 (与graph特性不兼容)
-cargo build --release --features gcu,eccl,flashattn
+# 启用 falshattn 特性以加速Prefill速度 (与graph特性不兼容)
+cargo build --release --features gcu,eccl,aten,flashattn
 ```
 ---
 

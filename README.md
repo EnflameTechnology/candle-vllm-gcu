@@ -31,16 +31,11 @@ cargo install bindgen-cli
 git submodule update --init --recursive
 cd candle-vllm
 
-# Build for single-node setup
+# Build without dependency
 cargo build --release --features gcu,eccl
 
 # Build with cuda graph
 cargo build --release --features gcu,eccl,graph
-
-# Build for multi-node support (MPI)
-sudo apt update
-sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
-cargo build --release --features gcu,eccl,mpi
 ```
 
 #### Build with TopsAten (optional)
@@ -49,12 +44,12 @@ dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
 cargo build --release --features gcu,eccl,aten
 ```
 
-#### Build with Flash Attention (optional, experimental)
-[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.4.5/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
+#### Build with Flash Attention (optional)
+[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
 ```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
-# Enable falsh-attn feature (not compatible with graph feature)
-cargo build --release --features gcu,eccl,flashattn
+# Enable falshattn feature for faster prefill (not compatible with graph feature)
+cargo build --release --features gcu,eccl,aten,flashattn
 ```
 
 ---
