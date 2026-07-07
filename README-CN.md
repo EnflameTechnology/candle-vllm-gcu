@@ -38,16 +38,12 @@ cargo build --release --features gcu,eccl
 cargo build --release --features gcu,eccl,graph
 ```
 
-#### 构建使用TopsAten算子库（可选）
+#### 构建使用TopsAten + Flash Attention（可选）
+[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
+
 ```bash
 dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
-cargo build --release --features gcu,eccl,aten
-```
-
-#### 构建包含Flash Attention特性（可选）
-[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
-```bash
-dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
+dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb # 安装 flash attn算子库
 # 启用 falshattn 特性以加速Prefill速度 (与graph特性不兼容)
 cargo build --release --features gcu,eccl,aten,flashattn
 ```
@@ -104,7 +100,7 @@ cargo build --release --features gcu,eccl,aten,flashattn
 
 ## 📊 模型支持与性能
 
-当前支持在 **Enflame S60 (48GB)** 上运行的模型如下：
+当前支持在 **Enflame S60 (48GB)** 上运行的模型如下（非Graph模式）：
 
 **1k tokens 推理长度输出统计：**
 
@@ -120,11 +116,12 @@ cargo build --release --features gcu,eccl,aten,flashattn
 | #8 | ChatGLM |TBD|TBD|TBD|
 | #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
 | #9 | **Qwen3** |✅|23 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|TBD|
-| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
-| #11 | GLM4 |✅|TBD|TBD|
-| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #13 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
-| #14 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
+| #10 | **Qwen3-MoE** |✅|33 tks/s (30B, **tp=2**)|TBD|TBD|
+| #11 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
+| #12 | GLM4 |✅|TBD|TBD|
+| #13 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
+| #14 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
+| #15 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
 ---
 
 ## 💡 使用示例

@@ -38,15 +38,11 @@ cargo build --release --features gcu,eccl
 cargo build --release --features gcu,eccl,graph
 ```
 
-#### Build with TopsAten (optional)
+#### Build with TopsAten + Flash Attention (optional)
+[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
+
 ```bash
 dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
-cargo build --release --features gcu,eccl,aten
-```
-
-#### Build with Flash Attention (optional)
-[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
-```bash
 dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
 # Enable falshattn feature for faster prefill (not compatible with graph feature)
 cargo build --release --features gcu,eccl,aten,flashattn
@@ -105,7 +101,7 @@ cargo build --release --features gcu,eccl,aten,flashattn
 
 ## 📊 Model Support & Performance
 
-Currently supported models on **Enflame S60 (48GB)**:
+Currently supported models on **Enflame S60 (48GB)** (under graph mode disabled):
 
 __List of 1k decoding results:__
 | Model ID | Model Type | Supported | Speed (BF16, bs=1)| Thoughput (BF16, bs=16) | Thoughput (W4A16)
@@ -119,12 +115,13 @@ __List of 1k decoding results:__
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
 | #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
-| #9 | **Qwen3** |✅|23 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|TBD|
-| #10 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
-| #11 | GLM4 |✅|TBD|TBD|
-| #12 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #13 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
-| #14 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
+| #9 | **Qwen3** |✅|23 tks/s (8B)|607 tks/s (14B, **bs=48**)|TBD|
+| #10 | **Qwen3-MoE** |✅|33 tks/s (30B, **tp=2**)|TBD|TBD|
+| #11 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
+| #12 | GLM4 |✅|TBD|TBD|
+| #13 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
+| #14 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
+| #15 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
 ---
 
 ## 💡 Usage Examples
