@@ -116,12 +116,13 @@ cargo build --release --features gcu,eccl,aten,flashattn
 | #8 | ChatGLM |TBD|TBD|TBD|
 | #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
 | #9 | **Qwen3** |✅|23 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|TBD|
-| #10 | **Qwen3-MoE** |✅|33 tks/s (30B, **tp=2**)|TBD|TBD|
-| #11 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
-| #12 | GLM4 |✅|TBD|TBD|
-| #13 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #14 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
-| #15 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
+| #10 | **Qwen3-MoE** |✅|41 tks/s (30B, **tp=2**)|TBD|TBD|
+| #11 | **Qwen3.5/3.6 35B** |✅|30 tks/s (35B, **tp=2**)|TBD|TBD|
+| #12 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
+| #13 | GLM4 |✅|TBD|TBD|
+| #14 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
+| #15 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
+| #16 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
 ---
 
 ## 💡 使用示例
