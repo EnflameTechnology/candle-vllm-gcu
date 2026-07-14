@@ -38,14 +38,12 @@ cargo build --release --features gcu,eccl
 cargo build --release --features gcu,eccl,graph
 ```
 
-#### Build with TopsAten + Flash Attention (optional)
-[Download](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb) and Install GCU Flash Attention package
+#### Build with TopsAten (optional)
 
 ```bash
 dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
-dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb
-# Enable falshattn feature for faster prefill (not compatible with graph feature)
-cargo build --release --features gcu,eccl,aten,flashattn
+# not compatible with graph feature
+cargo build --release --features gcu,eccl,aten
 ```
 
 ---

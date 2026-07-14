@@ -38,14 +38,12 @@ cargo build --release --features gcu,eccl
 cargo build --release --features gcu,eccl,graph
 ```
 
-#### 构建使用TopsAten + Flash Attention（可选）
-[下载](https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.6/flash-attn-gcu_0.1.0-1_amd64.deb)并安装GCU Flash Attention
+#### 构建使用TopsAten（可选）
 
 ```bash
 dpkg -i topsaten_3.6.*_amd64.deb # 安装topsaten算子库
-dpkg -i flash-attn-gcu_0.1.0-1_amd64.deb # 安装 flash attn算子库
-# 启用 falshattn 特性以加速Prefill速度 (与graph特性不兼容)
-cargo build --release --features gcu,eccl,aten,flashattn
+# 与graph特性不兼容
+cargo build --release --features gcu,eccl,aten
 ```
 ---
 
