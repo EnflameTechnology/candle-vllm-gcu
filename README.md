@@ -91,9 +91,7 @@ cargo build --release --features gcu,eccl,aten
 
 ## 🎥 Demo Chat Videos
 
-**🔷 DeepSeek-R1 685B (AWQ, \~8 tokens/s, 8 x Enflame S60, offloaded \~120GB to CPU)** <img src="resources/DeepSeek-R1-685B-S60-Candle-vLLM-GCU.gif" width="85%">
-
-**🔷 LLaMa3.1 8B (AWQ, \~40 tokens/s, 1 x Enflame S60)** <img src="resources/LLaMa3.1-8B-S60-Quant.gif" width="85%">
+**🔷 Qwen3-30B-MoE BF16 (Enflame S60)** <img src="resources/Qwen3-30B-MoE-S60-Candle-vLLM-GCU.gif" width="100%">
 
 ---
 
