@@ -11,18 +11,33 @@
 
 ## 🚀 Getting Started
 
-### 🔧 Build Candle-VLLM-GCU
+### 📦 Prerequisites
+
+```bash
+# Install Enflame drivers and runtime
+sudo ./TopsPlatform_1.7.*.run
+dpkg -i eccl_3.6.*.deb
+dpkg -i topsaten_3.6.*_amd64.deb
+```
+
+### 📦 Option 1 — Install prebuilt package (recommended)
+
+Download the GCU `.deb` from the [GitHub Releases](https://github.com/EnflameTechnology/candle-vllm-gcu/releases) page (asset name like `candle-vllm_*_amd64.deb`), then install:
+
+```bash
+# Example (replace with the asset version from the latest release):
+wget https://github.com/EnflameTechnology/candle-vllm-gcu/releases/download/v0.8.8/candle-vllm_0.8.8-1_amd64.deb
+sudo dpkg -i candle-vllm_0.8.8-1_amd64.deb
+
+# Binary installs to /usr/local/bin/candle-vllm
+candle-vllm --p 2000 --w /path/to/model --ui-server
+```
+
+### 🔧 Option 2 — Install from source
 
 ```bash
 # Install Rust (version 1.88.0 or higher)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Install required system dependencies
-sudo apt install libssl-dev pkg-config -y
-
-# Install Enflame's drivers and runtime
-sudo ./TopsPlatform_1.7.*.run
-dpkg -i eccl_3.6.*.deb
 
 # Install bindgen
 cargo install bindgen-cli
@@ -31,19 +46,8 @@ cargo install bindgen-cli
 git submodule update --init --recursive
 cd candle-vllm
 
-# Build without dependency
-cargo build --release --features gcu,eccl
-
-# Build with cuda graph
-cargo build --release --features gcu,eccl,graph
-```
-
-#### Build with TopsAten (optional)
-
-```bash
-dpkg -i topsaten_3.6.*_amd64.deb # install topsaten library
-# not compatible with graph feature
-cargo build --release --features gcu,eccl,aten
+# Install (then use `candle-vllm` directly); aten is optional and incompatible with graph
+cargo install --features gcu,eccl,aten --path .
 ```
 
 ---
@@ -61,30 +65,29 @@ cargo build --release --features gcu,eccl,aten
   - ✅ BF16
   - ✅ FP16
   - ❌ INT8
+- ✅ **KVCache / GDN State Offloading** (swap KV cache and GDN/Mamba state to CPU under GPU/GCU memory pressure)
 - ✅ **OpenAI-Compatible Server**
 - ❌ **Multimodal Models** 
 - 🛠️ **CUDA Graph** _(Under Development)_
 
-## ⚙️ Build and Running Parameters
-- [`ENV_PARAM`] cargo run [`BUILD_PARAM`] -- [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`]
+## ⚙️ Running Parameters
+- [`ENV_PARAM`] candle-vllm [`PROGRAM_PARAM`] [`MODEL_ID/MODEL_WEIGHT_PATH`]
   <details open>
     <summary>Show details</summary>
 
     **Example:**
 
     ```shell
-    [RUST_LOG=warn] cargo run [--release --features gcu,eccl,flashattn] -- [--log --dtype bf16 --p 2000 --d 0,1 --mem 8192 --ui-server] [--w /home/weights/QwQ-32B/]
+    [RUST_LOG=warn] candle-vllm [--log --dtype bf16 --p 2000 --d 0,1 --kv-fraction 0.6 --ui-server] [--w /home/weights/QwQ-32B/]
     ```
 
     `ENV_PARAM`: RUST_LOG=warn
 
-    `BUILD_PARAM`: --release --features gcu,eccl,flashattn
-
-    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --mem 8192
+    `PROGRAM_PARAM`：--log --dtype bf16 --p 2000 --d 0,1 --ui-server --kv-fraction 0.6
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--mem` is the key parameter to control KV cache usage (increase this for large batch); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable); `--ui-server` start with a ChatGPT-like WebUI.
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--kv-fraction` auto-sizes the KV cache as a fraction of remaining device memory after model load (default about `0.6`; raise it, e.g. `0.8`, for longer context or larger batches); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable); `--ui-server` start with a ChatGPT-like WebUI.
   </details>
 
 ---
@@ -100,25 +103,25 @@ cargo build --release --features gcu,eccl,aten
 Currently supported models on **Enflame S60 (48GB)** (under graph mode disabled):
 
 __List of 1k decoding results:__
-| Model ID | Model Type | Supported | Speed (BF16, bs=1)| Thoughput (BF16, bs=16) | Thoughput (W4A16)
-|--|--|--|--|--|--|
-| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 375 tks/s (LLaMa3.1 8B) | 41 tks/s (**bs=1**), 1185 tks/s (**bs=48**)|
-| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|TBD|
-| #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|TBD|
-| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|TBD|
-| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|TBD|
-| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|TBD|
+| Model ID | Model Type | Supported | Speed (BF16, bs=1)| Thoughput (BF16, bs=16) |
+|--|--|--|--|--|
+| #1 | **LLAMA** |✅|30 tks/s (7B), 27 tks/s (LLaMa3.1 8B)| 375 tks/s (LLaMa3.1 8B) |
+| #2 | **Mistral** |✅|29 tks/s (7B)|330 tks/s (7B)|
+| #3 | **Phi (v1, v1.5, v2)** |✅|TBD|TBD|
+| #4 | **Phi-3** |✅|38 tks/s (3.8B)|320 tks/s (BF16+F32, 7B)|
+| #5 | **Yi** |✅|28 tks/s (6B)|305 tks/s (6B)|
+| #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|TBD|
-| #9 | **Qwen3** |✅|23 tks/s (8B)|607 tks/s (14B, **bs=48**)|TBD|
-| #10 | **Qwen3-MoE** |✅|41 tks/s (30B, **tp=2**)|TBD|TBD|
-| #11 | **Qwen3.5/3.6 35B** |✅|30 tks/s (35B, **tp=2**)|TBD|TBD|
-| #12 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |TBD|
+| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|
+| #9 | **Qwen3** |✅|23 tks/s (8B)|607 tks/s (14B, **bs=48**)|
+| #10 | **Qwen3-MoE** |✅|41 tks/s (30B, **tp=2**)|TBD|
+| #11 | **Qwen3.5/3.6 35B** |✅|30 tks/s (35B, **tp=2**)|TBD|
+| #12 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |
 | #13 | GLM4 |✅|TBD|TBD|
 | #14 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
-| #15 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|TBD|
-| #16 | **QwQ-32B** |✅|10.6 tokens (**tp=2**)|214 tokens (**tp=2, bs=32**)|TBD|
+| #15 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|
+| #16 | **QwQ-32B** |✅|15 tokens (**tp=2**)|230 tokens (**tp=2, bs=32**)|
 ---
 
 ## 💡 Usage Examples
@@ -127,17 +130,17 @@ __List of 1k decoding results:__
 <summary><strong>Run Uncompressed Models</strong></summary>
 
 ```bash
-target/release/candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --ui-server
+candle-vllm --p 2000 --w /home/DeepSeek-R1-Distill-Llama-8B/ --ui-server
 ```
 
 ```bash
-target/release/candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1
+candle-vllm --w /home/Qwen3-30B-A3B-Instruct-2507/ --d 0,1
 ```
 
 Qwen3.5/3.6
 
 ```bash
-target/release/candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
+candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
 ```
 
 </details>
@@ -151,7 +154,7 @@ python3 transform_safetensors.py --src /path/to/gptq \
 --dst /path/to/gptq-enflame --bits 8 --method gptq --group 128 --nk True
 
 # run the converted model
-target/release/candle-vllm --p 2000 --w /path/to/gptq-enflame --ui-server
+candle-vllm --p 2000 --w /path/to/gptq-enflame --ui-server
 ```
 
 </details>
@@ -165,7 +168,7 @@ python3 transform_safetensors.py --src /path/to/awq \
 --dst /path/to/awq-enflame --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-target/release/candle-vllm --p 2000 --w /path/to/awq-enflame --ui-server
+candle-vllm --p 2000 --w /path/to/awq-enflame --ui-server
 ```
 
 </details>
@@ -177,70 +180,96 @@ target/release/candle-vllm --p 2000 --w /path/to/awq-enflame --ui-server
 
 ```bash
 # Use card 0 and card 1
-target/release/candle-vllm --p 2000 --d 0,1 --weight-path /path/to/model --ui-server
+candle-vllm --p 2000 --d 0,1 --w /path/to/model --ui-server
 ```
 
 </details>
 
-<details>
-<summary><strong>Multi-Node (MPI) Setup</strong></summary>
+<details open>
+<summary><strong>Multi-Node (TCP, no MPI)</strong></summary>
+
+For cross-machine tensor parallelism, nodes exchange the **ECCL UniqueId over TCP** (to bootstrap collective communication); local multi-process ECCL then handles per-device traffic. **MPI / `mpirun` is not required.** Build with `--features gcu,eccl` as usual.
 
 ```bash
-# Install MPI
-sudo apt install libopenmpi-dev openmpi-bin clang libclang-dev -y
+# Master node (e.g. 192.168.1.100), from the candle-vllm directory:
+candle-vllm --d 0,1,2,3,4,5,6,7 --w /data/deepseek-enflame \
+  --num-nodes 2 --node-rank 0 --master-addr 192.168.1.100 --master-port 29500
 
-# Build
-cargo build --release --features gcu,eccl,mpi
-
-# Launch via mpirun (make sure that model weights and candle-vllm binary located in the same folder in different machines)
-sudo mpirun -np 16 -x RUST_LOG=info -hostfile ./hostfile \
---allow-run-as-root -bind-to none -map-by slot \
---mca btl_tcp_if_include %NET_INTERFACE% \
-target/release/candle-vllm --dtype bf16 --p 2000 \
---d 0,1,2,3,4,5,6,7 --w /data/deepseek-enflame
+# Worker node (e.g. 192.168.1.101):
+candle-vllm --d 0,1,2,3,4,5,6,7 --w /data/deepseek-enflame \
+  --num-nodes 2 --node-rank 1 --master-addr 192.168.1.100 --master-port 29500
 ```
+
+| Flag | Description |
+|------|-------------|
+| `--num-nodes N` | Total nodes in the cluster |
+| `--node-rank R` | Rank of this node (`0` = master) |
+| `--master-addr ADDR` | Master IP; workers must set a reachable master address. If omitted on the master, it binds `0.0.0.0` |
+| `--master-port PORT` | ECCL ID exchange port (default `29500`); forward coordination also uses `PORT+1` — open both in the firewall |
+
+**Requirements:**
+
+- Every node has the same model weights locally and the same `candle-vllm` binary; each node's local device count in `--d` should match.
+- Workers can reach the master on `--master-port` and `--master-port + 1` over TCP.
+- Global world size = `num_nodes × local devices per node` (e.g. 2 nodes × 8 cards = tp=16).
 
 </details>
 
 ---
 
-## 💬 Chat Frontends
+## 💬 Clients, Web UI & Agents
 
-### Option 1: Quick Test via `chat.py`
+After the server starts, an OpenAI-compatible API is available (default `http://localhost:2000`). Use interactive chat, the built-in Web UI, concurrent benchmarks, or agent automation.
+
+### Option 1: Interactive chat (`chat.py`)
 
 ```bash
 pip install openai rich click
 python3 examples/chat.py
-python3 examples/chat.py --live # with markdown support
+python3 examples/chat.py --live   # live Markdown rendering
 ```
 
-### Option 2: Chat UI with history
+### Option 2: Built-in Chat Web UI (`--ui-server`)
 
 ```bash
-# install Rust aichat
-cargo install aichat
-
-aichat --serve
-# select `openai-compatible`, provide name `candle-vllm`
-# paste candle-vllm API Base url, like http://0.0.0.0:2000/v1/ (API Key: empty, LLMs to include: default)
-# click "LLM Playground" url
+# Start the API together with a ChatGPT-style Web UI (with chat history)
+candle-vllm --p 2000 --w /path/to/model --ui-server
+# Open the UI in a browser: http://localhost:1999 (UI port = API port - 1)
 ```
 
-
-https://github.com/user-attachments/assets/6fbad80b-e4d8-453f-b50d-50f61fa8c4f3
-
-
----
-
-## 📈 Benchmarking
-
-Run batched benchmark tests:
+### Option 3: Concurrent request benchmark (`benchmark.py`)
 
 ```bash
+# --batch is an alias for total prompts; also supports --num-prompts / --concurrency, etc.
 python3 examples/benchmark.py --batch 16 --max_tokens 1024
+python3 examples/benchmark.py --num-prompts 64 --concurrency 8 \
+  --input-lens 128,512,2048 --output-lens 128,512
 ```
 
-Refer to the [`benchmark.py`](candle-vllm/examples/benchmark.py) script for async chat example.
+See [`benchmark.py`](candle-vllm/examples/benchmark.py) for the full option list.
+
+### Option 4: xbot agent (vibe coding / backend automation)
+
+[`xbot`](candle-vllm/docs/xbot.md) is a Rust AI agent that talks to candle-vllm’s OpenAI-compatible API for project scanning, interactive REPL, or automation.
+
+```bash
+# 1) Start the server (example port 8000)
+candle-vllm --p 8000 --w /path/to/model
+
+# 2) Install and configure xbot
+cargo install xbot   # or: npm install -g @trusted-ai/xbot
+xbot onboard
+xbot config --provider
+# Provider: custom → name candle-vllm → API Base: http://localhost:8000/v1/ → no API key
+
+# 3) Run in your project
+cd YOUR_PROJECT
+xbot chat /init
+xbot chat "find bugs in this project."
+xbot repl    # interactive TUI
+```
+
+Full guide: [`docs/xbot.md`](candle-vllm/docs/xbot.md).
 
 ---
 
@@ -257,13 +286,5 @@ python3 transform_safetensors.py --src /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bi
 python3 transform_safetensors.py --src /data/DeepSeek-R1-AWQ --dst /data/DeepSeek-R1-AWQ-Enflame/ --bits 4 --method awq --group 64 --nk True
 
 # run the converted model
-cargo run --release --features gcu -- --p 2000 \
---w /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame
+candle-vllm --p 2000 --w /data/Meta-Llama-3.1-8B-Instruct-GPTQ-8bit-Enflame
 ```
-
----
-
-## 🛠️ TODO
-
-* [ ] Add GGUF model support (e.g., `q4_k` quantization).
-* [ ] Extend support to multimodal models.
