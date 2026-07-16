@@ -113,11 +113,11 @@ cargo install --features gcu,eccl,aten --path .
 | #6 | **StableLM** |✅|48 tks/s (3B)|425 tks/s (BF16, 3B)|
 | #7 | BigCode/StarCode |TBD|TBD|TBD|
 | #8 | ChatGLM |TBD|TBD|TBD|
-| #9 | **QWen2** |✅|22 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|
-| #9 | **Qwen3** |✅|23 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|
-| #10 | **Qwen3-MoE** |✅|41 tks/s (30B, **tp=2**)|TBD|
-| #11 | **Qwen3.5/3.6 35B** |✅|30 tks/s (35B, **tp=2**)|TBD|
-| #12 | **Google Gemma** |✅|51 tks/s (2B)| 577 tks/s (2B) |
+| #9 | **QWen2** |✅|25 tks/s (14B, **tp=2**)|322 tks/s (14B, **tp=2, bs=32**)|
+| #9 | **Qwen3** |✅|28 tks/s (8B, **bs=1**)|607 tks/s (14B, **bs=48**)|
+| #10 | **Qwen3-MoE** |✅|48 tks/s (30B, **tp=2**)| 175 tks/s (30B, **tp=2**, **bs=8**)|
+| #11 | **Qwen3.5/3.6 35B** |✅|35 tks/s (35B, **tp=2**)|TBD|
+| #12 | **Google Gemma** |✅|73 tks/s (2B)| 920 tks/s (2B) |
 | #13 | GLM4 |✅|TBD|TBD|
 | #14 | Moondream-2 (Multimodal LLM) |TBD|TBD|TBD|
 | #15 | **DeepSeek-V3/R1** (awq 671/685B, offloading) |✅|~8tks/s (**tp=8**)|155tks/s (**tp=8, bs=48**)|
