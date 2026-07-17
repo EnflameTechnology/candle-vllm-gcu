@@ -64,10 +64,10 @@ cargo install --features gcu,eccl,aten --path .
 - ✅ **KV Cache**
   - ✅ BF16
   - ✅ FP16
-  - ❌ INT8
+  - ✅ INT8
 - ✅ **KVCache / GDN State Offloading** (swap KV cache and GDN/Mamba state to CPU under GPU/GCU memory pressure)
 - ✅ **OpenAI-Compatible Server**
-- ❌ **Multimodal Models** 
+- ✅ **Multimodal Models** 
 - 🛠️ **CUDA Graph** _(Under Development)_
 
 ## ⚙️ Running Parameters
@@ -87,7 +87,7 @@ cargo install --features gcu,eccl,aten --path .
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--kv-fraction` auto-sizes the KV cache as a fraction of remaining device memory after model load (default about `0.6`; raise it, e.g. `0.8`, for longer context or larger batches); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable); `--ui-server` start with a ChatGPT-like WebUI.
+    where, `--p`: server port; `--d`: device ids; `--w`: weight path (safetensors folder); `--f`: weight file (for gguf); `--m`: huggingface model-id; `--kvcache-dtype int8` enables INT8 KV cache; `--kv-fraction` auto-sizes the KV cache as a fraction of remaining device memory after model load (default about `0.6`; raise it, e.g. `0.8`, for longer context or larger batches); `--prefill-chunk-size` chunk the prefill into size defined in this flag (default 8K, `0` for disable); `--ui-server` start with a ChatGPT-like WebUI.
   </details>
 
 ---
@@ -141,6 +141,12 @@ Qwen3.5/3.6
 
 ```bash
 candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
+```
+
+With INT8 KV cache
+
+```bash
+candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --kvcache-dtype int8 --ui-server
 ```
 
 </details>
@@ -241,7 +247,7 @@ candle-vllm --p 2000 --w /path/to/model --ui-server
 
 ```bash
 # --batch is an alias for total prompts; also supports --num-prompts / --concurrency, etc.
-python3 examples/benchmark.py --batch 16 --max_tokens 1024
+python3 examples/benchmark.py --max_tokens 1024
 python3 examples/benchmark.py --num-prompts 64 --concurrency 8 \
   --input-lens 128,512,2048 --output-lens 128,512
 ```

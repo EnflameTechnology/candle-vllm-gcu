@@ -61,10 +61,10 @@ cargo install --features gcu,eccl,aten --path .
 - ✅ **KV 缓存支持**
   - ✅ BF16
   - ✅ FP16
-  - ❌ 暂不支持 INT8
+  - ✅ INT8
 - ✅ **KVCache / GDN State Offloading**（显存不足时将 KV 缓存与 GDN/Mamba 状态换出到 CPU）
 - ✅ **兼容 OpenAI 接口的服务**
-- ❌ **多模态模型**
+- ✅ **多模态模型**
 - 🛠️ **CUDA Graph** _(开发中)_
 
 
@@ -86,7 +86,7 @@ cargo install --features gcu,eccl,aten --path .
 
     `MODEL_WEIGHT_PATH`: --w /home/weights/QwQ-32B
 
-    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--kv-fraction`：模型加载后按剩余显存比例自动分配 KV Cache（默认约 `0.6`，长文本或大批量可适当增大，如 `0.8`）; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）; `--ui-server`同时启动ChatGPT风格前端网站。
+    其中， `--p`: 服务端口; `--d`: 设备序列号; `--w`: 权重路径 (safetensors路径); `--f`: 权重文件 (GGUF模型使用); `--m`: Huggingface model-id; `--kvcache-dtype int8`：启用INT8 KV Cache；`--kv-fraction`：模型加载后按剩余显存比例自动分配 KV Cache（默认约 `0.6`，长文本或大批量可适当增大，如 `0.8`）; `--prefill-chunk-size`指定分块prefill时的块大小（默认8K，`0`为禁用）; `--ui-server`同时启动ChatGPT风格前端网站。
   </details>
 
 ---
@@ -142,6 +142,12 @@ Qwen3.5/3.6
 
 ```bash
 candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --ui-server
+```
+
+INT8 KV Cache
+
+```bash
+candle-vllm --m Qwen/Qwen3.5-35B-A3B --d 0,1 --kvcache-dtype int8 --ui-server
 ```
 
 </details>
@@ -242,7 +248,7 @@ candle-vllm --p 2000 --w /path/to/model --ui-server
 
 ```bash
 # --batch 为请求总数别名；也可用 --num-prompts / --concurrency 等参数
-python3 examples/benchmark.py --batch 16 --max_tokens 1024
+python3 examples/benchmark.py --max_tokens 1024
 python3 examples/benchmark.py --num-prompts 64 --concurrency 8 \
   --input-lens 128,512,2048 --output-lens 128,512
 ```
